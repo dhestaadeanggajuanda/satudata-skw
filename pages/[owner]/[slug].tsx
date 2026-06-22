@@ -1,308 +1,516 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { useState } from 'react'
 import type { GetStaticPaths, GetStaticProps } from 'next'
-import { Table } from '../../components/Table'
-import {
-  DATA_QUERY,
-  NAMESPACE_TYPE,
-  getResources,
-  resourceUrl,
-  type Dataset,
-  type Resource,
-} from '../../lib/datasets'
-import { provider } from '../../lib/providers'
+import { ckan, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, type CkanOrgDetail, type CkanActivity } from '../../lib/ckan'
 
-// DuckDB only runs in the browser, so load the query view client-side. The chunk
-// (and DuckDB-Wasm) is only fetched when DATA_QUERY === 'duckdb' and a showcase
-// actually renders it — flat portals never pay for it.
-const DataExplorer = dynamic(() => import('../../components/DataExplorer'), {
-  ssr: false,
-})
+const Table = dynamic(
+  () => import('../../components/Table').then((mod) => ({ default: mod.Table })),
+  { ssr: false }
+)
 
+const Chart = dynamic(
+  () => import('../../components/Chart').then((mod) => ({ default: mod.Chart })),
+  { ssr: false }
+)
+
+// ── Types ──────────────────────────────────────────────────────────────────
+type ResourceView = {
+  id: string
+  name: string
+  format: string
+  url: string
+  description: string
+  isTabular: boolean
+}
+type ExtraField = { key: string; value: string }
+type GroupItem = { name: string; title: string; imageUrl: string; packageCount: number }
+type ActivityItem = { timestamp: string; label: string }
+type OrgInfo = {
+  name: string
+  title: string
+  description: string
+  imageUrl: string
+  packageCount: number
+  createdDate: string
+}
+
+type DatasetView = {
+  slug: string
+  namespace: string
+  orgSlug: string
+  title: string
+  notes: string
+  org: string
+  isOpen: boolean
+  license: string
+  licenseUrl: string
+  metadataCreated: string
+  metadataModified: string
+  tags: string[]
+  extras: ExtraField[]
+  resources: ResourceView[]
+  groups: GroupItem[]
+  activities: ActivityItem[]
+  orgInfo: OrgInfo | null
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const TABULAR = ['csv', 'tsv']
+
+function formatDate(iso: string): string {
+  if (!iso) return '-'
+  return new Date(iso).toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+function formatBadgeClass(fmt: string): string {
+  const f = fmt.toLowerCase()
+  if (['csv', 'tsv'].includes(f)) return 'bg-green-100 text-green-700'
+  if (['xlsx', 'xls'].includes(f)) return 'bg-emerald-100 text-emerald-700'
+  if (['pdf'].includes(f)) return 'bg-red-100 text-red-700'
+  if (['json', 'geojson'].includes(f)) return 'bg-yellow-100 text-yellow-700'
+  if (['shp', 'kml', 'kmz'].includes(f)) return 'bg-purple-100 text-purple-700'
+  return 'bg-gray-100 text-gray-600'
+}
+
+function activityLabel(type: string): string {
+  if (type === 'new package') return 'Dataset dibuat'
+  if (type === 'changed package') return 'Dataset diperbarui'
+  if (type === 'deleted package') return 'Dataset dihapus'
+  if (type === 'new resource') return 'Berkas ditambahkan'
+  if (type === 'changed resource') return 'Berkas diperbarui'
+  return type
+}
+
+// ── SSG ────────────────────────────────────────────────────────────────────
 export const getStaticPaths: GetStaticPaths = async () => {
-  const datasets = await provider.listDatasets()
+  const { datasets } = await ckan.packageSearch({
+    offset: 0,
+    limit: MAX_DATASETS,
+    tags: [],
+    orgs: ORG_FILTER,
+    groups: GROUP_FILTER,
+  })
   return {
-    // The `owner` segment carries the `@` prefix so the generated URL is
-    // /@<namespace>/<slug> — namespacing datasets under `@` keeps them from
-    // colliding with regular content/static pages (which never start with `@`).
     paths: datasets.map((d) => ({
-      params: { owner: '@' + d.namespace, slug: d.slug },
+      params: { owner: '@' + (d.organization?.name || 'dataset'), slug: d.name },
     })),
     fallback: false,
   }
 }
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  // Strip the leading `@` from the owner segment to recover the namespace,
-  // then resolve the dataset by its (namespace, slug) pair.
+export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({ params }) => {
   const namespace = String(params?.owner ?? '').replace(/^@/, '')
-  const dataset = await provider.getDataset(namespace, String(params?.slug))
-  if (!dataset) return { notFound: true }
-  return { props: { dataset } }
+  const slug = String(params?.slug)
+  try {
+    const d = await ckan.getDatasetDetails(slug)
+    const datasetId = d.id || slug
+
+    // Parallel fetch: org details + activity stream
+    const [orgDetail, rawActivities] = await Promise.all([
+      ckan.getOrganizationDetails(d.organization?.name || ''),
+      ckan.getDatasetActivity(datasetId),
+    ])
+
+    // Activity fallback if API returns unauthorized
+    const activities: ActivityItem[] =
+      rawActivities.length > 0
+        ? rawActivities.map((a: CkanActivity) => ({
+            timestamp: a.timestamp,
+            label: activityLabel(a.activity_type),
+          }))
+        : [
+            ...(d.metadata_modified && d.metadata_modified !== d.metadata_created
+              ? [{ timestamp: d.metadata_modified, label: 'Dataset diperbarui' }]
+              : []),
+            { timestamp: d.metadata_created || '', label: 'Dataset dibuat' },
+          ]
+
+    const orgInfo: OrgInfo | null = orgDetail
+      ? {
+          name: orgDetail.name,
+          title: orgDetail.title,
+          description: orgDetail.description || '',
+          imageUrl: orgDetail.image_display_url || '',
+          packageCount: orgDetail.package_count || 0,
+          createdDate: formatDate(orgDetail.created || ''),
+        }
+      : null
+
+    const dataset: DatasetView = {
+      slug: d.name,
+      namespace,
+      orgSlug: d.organization?.name || '',
+      title: d.title || d.name,
+      notes: d.notes || '',
+      org: d.organization?.title || d.organization?.name || '',
+      isOpen: d.isopen ?? false,
+      license: d.license_title || '',
+      licenseUrl: d.license_url || '',
+      metadataCreated: formatDate(d.metadata_created || ''),
+      metadataModified: formatDate(d.metadata_modified || ''),
+      tags: (d.tags || []).map((t) => t.display_name),
+      extras: (d.extras || []).filter((e) => e.value && e.key),
+      resources: (d.resources || []).map((r) => {
+        const fmt = (r.format || '').toLowerCase()
+        return {
+          id: r.id,
+          name: r.name || r.id,
+          format: r.format || '',
+          url: r.url || '',
+          description: r.description || '',
+          isTabular: TABULAR.includes(fmt),
+        }
+      }),
+      groups: (d.groups || []).map((g) => ({
+        name: g.name,
+        title: g.title,
+        imageUrl: g.image_display_url || '',
+        packageCount: g.package_count || 0,
+      })),
+      activities,
+      orgInfo,
+    }
+    return { props: { dataset } }
+  } catch {
+    return { notFound: true }
+  }
 }
 
-export default function DatasetPage({ dataset }: { dataset: Dataset }) {
-  const resources = getResources(dataset)
-  const namespaceLabel = NAMESPACE_TYPE === 'owner' ? 'Owner' : 'Theme'
+// ── Page Component ─────────────────────────────────────────────────────────
+type Tab = 'dataset' | 'grup' | 'aktivitas'
+
+export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
+  const [activeTab, setActiveTab] = useState<Tab>('dataset')
+  const firstTabular = dataset.resources.find((r) => r.isTabular && r.url)
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'dataset', label: 'Dataset' },
+    { id: 'grup', label: 'Grup' },
+    { id: 'aktivitas', label: 'Aktivitas' },
+  ]
 
   return (
     <>
       <Head>
-        <title>{dataset.name}</title>
+        <title>{`${dataset.title} — Satu Data Kota Singkawang`}</title>
       </Head>
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <nav className="mb-6 text-sm text-gray-500">
-          <Link href="/" className="hover:text-gray-700">
-            Home
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/search" className="hover:text-gray-700">
-            Search
-          </Link>
-          <span className="mx-2">/</span>
-          <span>{dataset.name}</span>
-        </nav>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {dataset.name}
-        </h1>
-        {dataset.description && (
-          <p className="text-gray-500 mb-8">{dataset.description}</p>
-        )}
 
-        {/* Metadata block */}
-        <dl className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-              {namespaceLabel}
-            </dt>
-            <dd className="mt-1 text-sm text-gray-800">@{dataset.namespace}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-              Resources
-            </dt>
-            <dd className="mt-1 text-sm text-gray-800">
-              {resources.length} file{resources.length === 1 ? '' : 's'}
-            </dd>
-          </div>
-          {dataset.version && (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                Version
-              </dt>
-              <dd className="mt-1 text-sm text-gray-800">{dataset.version}</dd>
-            </div>
-          )}
-          {dataset.modified && (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                Modified
-              </dt>
-              <dd className="mt-1 text-sm text-gray-800">{dataset.modified}</dd>
-            </div>
-          )}
-        </dl>
+      {/* Page header band */}
+      <div className="border-b border-gray-200 bg-white py-4 shadow-sm">
+        <div className="mx-auto max-w-6xl px-4">
+          <nav className="text-xs text-gray-400">
+            <Link href="/" className="hover:text-gray-600">Beranda</Link>
+            <span className="mx-1.5">/</span>
+            <Link href="/search" className="hover:text-gray-600">Dataset</Link>
+            <span className="mx-1.5">/</span>
+            <span className="line-clamp-1 text-gray-600">{dataset.title}</span>
+          </nav>
+        </div>
+      </div>
 
-        {/* Keywords */}
-        {dataset.keywords && dataset.keywords.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2">
-            {dataset.keywords.map((kw) => (
-              <span
-                key={kw}
-                className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600"
+      <main className="mx-auto max-w-6xl px-4 py-8">
+
+        {/* Header */}
+        <div className="mb-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                dataset.isOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {dataset.isOpen ? 'Terbuka' : 'Tertutup'}
+            </span>
+            {dataset.org && (
+              <Link
+                href={`/search?org=${encodeURIComponent(dataset.orgSlug)}`}
+                className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
               >
-                {kw}
-              </span>
-            ))}
+                {dataset.org}
+              </Link>
+            )}
+          </div>
+
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{dataset.title}</h1>
+
+          {dataset.notes && (
+            <p className="mt-3 text-gray-600 leading-relaxed whitespace-pre-line">{dataset.notes}</p>
+          )}
+
+          {dataset.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {dataset.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/search?q=${encodeURIComponent(tag)}`}
+                  className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 transition-colors"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Org card */}
+        {dataset.orgInfo && (
+          <div className="mt-5 flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            {dataset.orgInfo.imageUrl ? (
+              <img
+                src={dataset.orgInfo.imageUrl}
+                alt={dataset.orgInfo.title}
+                className="h-12 w-12 shrink-0 rounded-lg object-contain"
+              />
+            ) : (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">Diterbitkan oleh</p>
+              <Link
+                href={`/search?org=${encodeURIComponent(dataset.orgSlug)}`}
+                className="text-sm font-semibold text-gray-900 hover:text-blue-700 transition-colors"
+              >
+                {dataset.orgInfo.title}
+              </Link>
+              {dataset.orgInfo.description && (
+                <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{dataset.orgInfo.description}</p>
+              )}
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-lg font-bold text-[#0c2445]">{dataset.orgInfo.packageCount}</p>
+              <p className="text-[11px] text-gray-400">dataset</p>
+            </div>
           </div>
         )}
 
-        {/* Data — one section per resource (a single-file dataset has exactly
-            one; multi-resource datasets render a section for each file). */}
-        {resources.map((r, i) => (
-          <ResourceSection
-            key={r.name + i}
-            resource={r}
-            showHeading={resources.length > 1}
-          />
-        ))}
+        {/* Tab nav */}
+        <div className="mt-8 border-b border-gray-200">
+          <nav className="-mb-px flex gap-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3 text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-b-2 border-[#0c2445] font-semibold text-[#0c2445]'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-        {/* Sources & license — Data Package descriptor fields. */}
-        {((dataset.licenses && dataset.licenses.length > 0) ||
-          (dataset.sources && dataset.sources.length > 0)) && (
-          <section className="mt-10 border-t border-gray-200 pt-6">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Sources &amp; license
-            </h2>
-            {dataset.sources && dataset.sources.length > 0 && (
-              <div className="mt-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  Sources
-                </h3>
-                <ul className="mt-1 text-sm text-gray-700">
-                  {dataset.sources.map((s) => (
-                    <li key={s.title}>
-                      {s.path ? (
-                        <a
-                          href={s.path}
-                          className="text-blue-600 underline hover:text-blue-700"
-                        >
-                          {s.title}
-                        </a>
-                      ) : (
-                        s.title
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+        {/* ── Tab: Dataset ── */}
+        {activeTab === 'dataset' && (
+          <div className="mt-6">
+            {/* Two-column: metadata + resources */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Informasi Dataset */}
+              <aside className="lg:col-span-1">
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <h2 className="mb-4 text-sm font-semibold text-gray-700">
+                    Informasi Dataset
+                  </h2>
+                  <dl className="space-y-3">
+                    <MetaRow label="Diterbitkan" value={dataset.metadataCreated} />
+                    <MetaRow label="Diperbarui" value={dataset.metadataModified} />
+                    {dataset.org && <MetaRow label="Organisasi" value={dataset.org} />}
+                    {dataset.license && (
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Lisensi</dt>
+                        <dd className="mt-0.5 text-sm text-gray-800">
+                          {dataset.licenseUrl ? (
+                            <a href={dataset.licenseUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700">
+                              {dataset.license}
+                            </a>
+                          ) : dataset.license}
+                        </dd>
+                      </div>
+                    )}
+                    <MetaRow label="Jumlah Berkas" value={`${dataset.resources.length} berkas`} />
+                  </dl>
+                </div>
+              </aside>
+
+              {/* Unduh Data */}
+              <section className="lg:col-span-2">
+                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+                  Unduh Data
+                </h2>
+                {dataset.resources.length === 0 ? (
+                  <div className="rounded-xl border-2 border-dashed border-gray-200 p-8 text-center text-gray-400">
+                    <p>Dataset ini belum memiliki berkas.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {dataset.resources.map((r) => (
+                      <div
+                        key={r.id}
+                        className="flex items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-4 hover:border-blue-200 transition-colors"
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          {r.format && (
+                            <span className={`mt-0.5 shrink-0 rounded px-2 py-0.5 text-xs font-bold uppercase ${formatBadgeClass(r.format)}`}>
+                              {r.format}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 line-clamp-1">{r.name}</p>
+                            {r.description && (
+                              <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{r.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        {r.url && (
+                          <a
+                            href={r.url}
+                            className="shrink-0 rounded-lg bg-[#0c2445] px-4 py-2 text-xs font-semibold text-white hover:bg-[#163666] transition-colors"
+                            download
+                          >
+                            ↓ Unduh
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* ── Visualisasi (dataset-specific, gated by slug) ── */}
+            {dataset.slug === 'indeks-toleransi-indeks-kota-toleran' &&
+              dataset.resources.some((r) => r.format.toLowerCase() === 'csv') && (
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 className="mb-1 text-sm font-semibold text-gray-700">Visualisasi</h2>
+                <p className="mb-4 text-xs text-gray-400">
+                  Tren Indeks Toleransi Kota Singkawang tahun 2018–2023
+                </p>
+                <Chart
+                  url={dataset.resources.find((r) => r.format.toLowerCase() === 'csv')!.url}
+                  type="line"
+                  height={320}
+                  wideMode
+                  labelColumn="Uraian"
+                  seriesRows={[
+                    { match: 'Indeks Toleransi (Indeks Kota Toleran)', label: 'Indeks Toleransi' },
+                    { match: 'Indeks inklusivitas dalam RPJMD', label: 'Inklusivitas RPJMD' },
+                    { match: 'Indeks kebijakan diskriminatif', label: 'Kebijakan Diskriminatif' },
+                    { match: 'Indeks peristiwa intoleransi', label: 'Peristiwa Intoleransi' },
+                  ]}
+                />
+              </section>
             )}
-            {dataset.licenses && dataset.licenses.length > 0 && (
-              <div className="mt-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  License
-                </h3>
-                <ul className="mt-1 text-sm text-gray-700">
-                  {dataset.licenses.map((l) => (
-                    <li key={l.name ?? l.title ?? l.path}>
-                      {l.path ? (
-                        <a
-                          href={l.path}
-                          className="text-blue-600 underline hover:text-blue-700"
-                        >
-                          {l.title ?? l.name}
-                        </a>
-                      ) : (
-                        l.title ?? l.name
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+
+            {/* Pratinjau Data */}
+            {firstTabular && (
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 className="mb-3 text-sm font-semibold text-gray-700">
+                  Pratinjau Data
+                </h2>
+                <p className="mb-3 text-xs text-gray-400">
+                  {firstTabular.name}
+                  {firstTabular.format && (
+                    <span className={`ml-2 rounded px-1.5 py-0.5 text-xs font-bold uppercase ${formatBadgeClass(firstTabular.format)}`}>
+                      {firstTabular.format}
+                    </span>
+                  )}
+                </p>
+                <Table url={firstTabular.url} />
+              </section>
             )}
-          </section>
+
+            {/* Informasi Tambahan */}
+            {dataset.extras.length > 0 && (
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+                  Informasi Tambahan
+                </h2>
+                <dl className="grid gap-4 sm:grid-cols-2">
+                  {dataset.extras.map((e) => (
+                    <div key={e.key}>
+                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{e.key}</dt>
+                      <dd className="mt-1 text-sm text-gray-700 leading-relaxed">{e.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
+          </div>
         )}
 
-        {/* Views placeholder — charts and maps are added here by the
-            /portaljs-add-chart and /portaljs-add-map skills. */}
-        <section className="mt-10 border-t border-gray-200 pt-6">
-          <h2 className="text-lg font-semibold text-gray-900">Views</h2>
-          <p className="mt-2 text-sm text-gray-400">
-            No views yet. Charts and maps for this dataset are added here.
-          </p>
-        </section>
+        {/* ── Tab: Grup ── */}
+        {activeTab === 'grup' && (
+          <div className="mt-6">
+            <h2 className="mb-4 text-sm font-semibold text-gray-700">Grup</h2>
+            {dataset.groups.length === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400">
+                <p className="text-base font-medium">Dataset ini tidak memiliki grup</p>
+                <p className="mt-1 text-sm">
+                  Dataset tidak tergabung dalam grup atau kategori manapun.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {dataset.groups.map((g) => (
+                  <div key={g.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
+                    {g.imageUrl && (
+                      <img src={g.imageUrl} alt={g.title} className="h-10 w-10 rounded object-cover" />
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{g.title}</p>
+                      <p className="text-xs text-gray-400">{g.packageCount} dataset</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Aktivitas ── */}
+        {activeTab === 'aktivitas' && (
+          <div className="mt-6">
+            <h2 className="mb-6 text-sm font-semibold text-gray-700">
+              Riwayat Aktivitas
+            </h2>
+            {dataset.activities.length === 0 ? (
+              <p className="text-sm text-gray-400">Tidak ada riwayat aktivitas tersedia.</p>
+            ) : (
+              <ol className="relative ml-3 space-y-6 border-l-2 border-gray-200">
+                {dataset.activities.map((a, i) => (
+                  <li key={i} className="relative ml-6">
+                    <span className="absolute -left-[1.65rem] top-1 h-3 w-3 rounded-full border-2 border-white bg-[#0c2445] shadow-sm" />
+                    <time className="mb-0.5 block text-xs text-gray-400">
+                      {formatDate(a.timestamp)}
+                    </time>
+                    <p className="text-sm font-medium text-gray-800">{a.label}</p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
       </main>
     </>
   )
 }
 
-// One resource within a dataset: preview (flat <Table /> or the DuckDB SQL view),
-// its Frictionless Table Schema, and a download / API line. A single-file dataset
-// renders exactly one of these (getResources synthesizes it); multi-resource
-// datasets render one per file, each with its own heading.
-function ResourceSection({
-  resource,
-  showHeading,
-}: {
-  resource: Resource
-  showHeading: boolean
-}) {
-  const url = resourceUrl(resource)
-  const tabular = resource.format === 'csv' || resource.format === 'tsv'
+function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <section className="mt-10 border-t border-gray-200 pt-6 first:mt-2 first:border-t-0 first:pt-0">
-      {showHeading && (
-        <div className="mb-3 flex items-baseline gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {resource.title ?? resource.name}
-          </h2>
-          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs uppercase tracking-wide text-gray-500">
-            {resource.format}
-          </span>
-        </div>
-      )}
-      {showHeading && resource.description && (
-        <p className="mb-3 text-sm text-gray-500">{resource.description}</p>
-      )}
-
-      {tabular && DATA_QUERY === 'duckdb' ? (
-        <DataExplorer resource={resource} />
-      ) : tabular ? (
-        <Table url={url} fullWidth />
-      ) : (
-        <p className="text-gray-500">
-          Preview not available for {resource.format} files.{' '}
-          <a href={url} className="underline">
-            Download the file
-          </a>
-          .
-        </p>
-      )}
-
-      {/* Per-resource Frictionless Table Schema (degrades cleanly when absent). */}
-      {resource.schema?.fields && resource.schema.fields.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-            Schema
-          </h3>
-          <div className="mt-2 overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wide text-gray-400">
-                  <th className="py-2 pr-4 font-semibold">Field</th>
-                  <th className="py-2 pr-4 font-semibold">Type</th>
-                  <th className="py-2 pr-4 font-semibold">Description</th>
-                  <th className="py-2 font-semibold">Constraints</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resource.schema.fields.map((f) => {
-                  const c = f.constraints
-                  const tags = [
-                    c?.required && 'required',
-                    c?.unique && 'unique',
-                    c?.enum && `enum(${c.enum.length})`,
-                  ].filter(Boolean) as string[]
-                  return (
-                    <tr key={f.name} className="border-b border-gray-100 align-top">
-                      <td className="py-2 pr-4 font-mono text-gray-800">{f.name}</td>
-                      <td className="py-2 pr-4 text-gray-600">{f.type ?? '—'}</td>
-                      <td className="py-2 pr-4 text-gray-600">
-                        {f.description ?? f.title ?? ''}
-                      </td>
-                      <td className="py-2 text-gray-500">{tags.join(', ')}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          {resource.schema.primaryKey && (
-            <p className="mt-2 text-xs text-gray-400">
-              Primary key:{' '}
-              <code className="rounded bg-gray-100 px-1">
-                {Array.isArray(resource.schema.primaryKey)
-                  ? resource.schema.primaryKey.join(', ')
-                  : resource.schema.primaryKey}
-              </code>
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Download + API for this resource. */}
-      <p className="mt-4 text-sm">
-        <a href={url} className="text-blue-600 underline hover:text-blue-700">
-          Download {resource.path}
-        </a>
-        <span className="text-gray-500">
-          {' '}
-          — served statically at{' '}
-          <code className="bg-gray-100 px-1 rounded">{url}</code> for programmatic
-          access.
-        </span>
-      </p>
-    </section>
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</dt>
+      <dd className="mt-0.5 text-sm text-gray-800">{value}</dd>
+    </div>
   )
 }

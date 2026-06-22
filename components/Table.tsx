@@ -21,6 +21,7 @@ import {
 import DebouncedInput from './ui/DebouncedInput'
 import LoadingSpinner from './ui/LoadingSpinner'
 import { parseCsv } from './ui/parseCsv'
+import { proxyUrl } from '../lib/proxy'
 
 type Row = Record<string, string | number>
 type Col = { key: string; name: string }
@@ -71,7 +72,7 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
     if (!url) return
     setIsLoading(true)
     setError(null)
-    fetch(url)
+    fetch(proxyUrl(url))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status} — ${r.statusText}`)
         return r.text()

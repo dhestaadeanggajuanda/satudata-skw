@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   return (
-    <Html lang="en">
+    <Html lang="id">
       <Head>
         {/* Default PortalJS branding — PLACEHOLDER. Replace the files in `public/`
             (favicon.ico, icon.svg, apple-touch-icon.png, icon-512.png) with your
@@ -11,7 +11,7 @@ export default function Document() {
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="description" content="Portal Satu Data Kota Singkawang." />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#0c2445" />
       </Head>
       <body>
         <Main />

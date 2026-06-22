@@ -1,40 +1,64 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
-// Site navbar, rendered on every page via `_app.tsx`. Minimal and light to match
-// the catalog template's Tailwind style.
-//
-// BRANDING IS A PLACEHOLDER — the logo (`/icon.svg`) and the name (`Satu Data Kota Singkawang`,
-// substituted by /portaljs-new-portal) ship as PortalJS defaults. Swap `public/icon.svg`
-// (and the other files in `public/`) for your own mark; change the name in your portal's
-// metadata. A generated portal should not permanently wear the PortalJS logo.
+const NAV_LINKS = [
+  { href: '/search', label: 'Dataset' },
+  { href: '/topik', label: 'Topik' },
+  { href: '/organisasi', label: 'Organisasi' },
+]
+
 export default function Navbar() {
+  const router = useRouter()
+
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-gray-200 bg-white shadow-sm">
+      {/* Accent bar */}
+      <div className="h-1 bg-gradient-to-r from-[#0c2445] to-[#1a4f7a]" />
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link
           href="/"
-          className="group flex items-center gap-2.5"
-          aria-label="Satu Data Kota Singkawang — home"
+          className="flex items-center gap-3"
+          aria-label="Satu Data Kota Singkawang — beranda"
         >
-          {/* Spin-on-hover: a ~0.6s rotate, disabled under prefers-reduced-motion
-              via Tailwind's `motion-reduce:` variant (see acceptance criteria). */}
           <img
-            src="/icon.svg"
-            alt=""
-            width={28}
-            height={28}
-            className="h-7 w-7 transition-transform duration-700 ease-in-out group-hover:rotate-[360deg] motion-reduce:transform-none motion-reduce:transition-none"
+            src="/logo-singkawang.png"
+            alt="Lambang Kota Singkawang"
+            width={36}
+            height={36}
+            className="h-9 w-9 object-contain"
           />
-          <span className="text-base font-semibold text-gray-900">
-            Satu Data Kota Singkawang
-          </span>
+          <div className="leading-tight">
+            <p className="text-sm font-bold text-[#0c2445]">Satu Data Kota Singkawang</p>
+            <p className="text-[11px] tracking-wide text-gray-400">Portal Data Terbuka</p>
+          </div>
         </Link>
-        <Link
-          href="/search"
-          className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-        >
-          Search
-        </Link>
+
+        <div className="flex items-center gap-1">
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = router.pathname === href
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#0c2445]/5 text-[#0c2445]'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445]'
+                }`}
+              >
+                {label}
+              </Link>
+            )
+          })}
+          <a
+            href="https://singkawangkota.go.id"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#0c2445]"
+          >
+            singkawangkota.go.id ↗
+          </a>
+        </div>
       </nav>
     </header>
   )
