@@ -294,7 +294,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 
         {/* Tab nav */}
         <div className="mt-8 border-b border-gray-200">
-          <nav className="-mb-px flex gap-8">
+          <nav className="-mb-px flex gap-4 overflow-x-auto sm:gap-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -357,7 +357,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                     {dataset.resources.map((r) => (
                       <div
                         key={r.id}
-                        className="flex items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-4 hover:border-blue-200 transition-colors"
+                        className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-blue-200 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex items-start gap-3 min-w-0">
                           {r.format && (
@@ -375,7 +375,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                         {r.url && (
                           <a
                             href={r.url}
-                            className="shrink-0 rounded-lg bg-[#0c2445] px-4 py-2 text-xs font-semibold text-white hover:bg-[#163666] transition-colors"
+                            className="self-start shrink-0 rounded-lg bg-[#0c2445] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#163666] sm:self-auto"
                             download
                           >
                             ↓ Unduh

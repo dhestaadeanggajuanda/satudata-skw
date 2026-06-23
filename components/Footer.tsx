@@ -2,7 +2,7 @@ export default function Footer() {
   const year = new Date().getFullYear()
   return (
     <footer className="bg-[#0c2445] py-10 text-white">
-      <div className="mx-auto max-w-6xl px-4 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+      <div className="mx-auto max-w-6xl px-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
         <div className="flex items-start gap-4">
           <img
             src="/logo-singkawang.png"

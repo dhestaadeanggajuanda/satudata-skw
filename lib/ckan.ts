@@ -143,6 +143,12 @@ export const ckan = {
       return await ckanAction('package_activity_list', { id: datasetId, limit: '15' })
     } catch { return [] }
   },
+  async tagList(): Promise<string[]> {
+    try {
+      const result = await ckanAction('tag_list', {})
+      return (result as string[]).slice(0, 12)
+    } catch { return [] }
+  },
 }
 
 export type DatasetCard = {
