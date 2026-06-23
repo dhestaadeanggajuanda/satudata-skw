@@ -122,7 +122,7 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
   }
 
   return (
-    <div className={fullWidth ? 'w-[90vw] ml-[calc(50%-45vw)]' : 'w-full'}>
+    <div className={fullWidth ? 'w-full overflow-x-auto md:w-[90vw] md:ml-[calc(50%-45vw)]' : 'w-full overflow-x-auto'}>
       <DebouncedInput
         value={globalFilter}
         onChange={(v) => setGlobalFilter(String(v))}

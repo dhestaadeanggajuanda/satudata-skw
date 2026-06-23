@@ -3,32 +3,68 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, datasetHref, type DatasetCard } from '../lib/ckan'
-
-type OrgChip = { name: string; title: string }
+import { ckan, type CkanGroupCard, type CkanOrgCard } from '../lib/ckan'
 
 type Props = {
-  featured: DatasetCard[]
-  orgs: OrgChip[]
   totalCount: number
+  tags: string[]
+  groups: CkanGroupCard[]
+  orgs: CkanOrgCard[]
+}
+
+const TOPIC_ICONS: Record<string, string> = {
+  pendidikan: '🎓',
+  kesehatan: '🏥',
+  ekonomi: '📈',
+  perpustakaan: '📚',
+  'pekerjaan-umum-dan-penataan-ruang': '🏗️',
+  'administrasi-kependudukan-dan-pencatatan-sipil': '🪪',
+  kearsipan: '🗂️',
+  kebudayaan: '🎭',
+  'sumber-daya-alam-dan-lingkungan': '🌿',
+  pariwisata: '🏖️',
+  perhubungan: '🚦',
+  pangan: '🌾',
+  'kelautan-dan-perikanan': '🐟',
+  'kepemudaan-dan-olahraga': '⚽',
+  perindustrian: '🏭',
+  'koperasi-usaha-kecil-dan-menengah': '🤝',
+  'penanaman-modal': '💼',
+  persandian: '🔐',
+  komunikasi: '📡',
+  'komunikasi-dan-informatika': '💻',
+  'pemberdayaan-masyarakat-dan-desa': '🏘️',
+  'pemberdayaan-perempuan-dan-perlindungan-anak': '👨‍👩‍👧',
+  'pengendalian-penduduk-dan-keluarga-berencana': '👨‍👩‍👦',
+  'pemerintahan-umum': '🏛️',
+  'ketentraman-ketertiban-umum-dan-perlindungan-masyarakat': '🛡️',
+  pengawas: '🔍',
 }
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const [{ datasets: featuredRaw, count }, orgs] = await Promise.all([
-    ckan.packageSearch({ offset: 0, limit: 6 }),
-    ckan.organizationList(),
+  const [{ count }, tags, groups, orgs] = await Promise.all([
+    ckan.packageSearch({ offset: 0, limit: 1 }),
+    ckan.tagList(),
+    ckan.groupList(),
+    ckan.organizationListFull(),
   ])
-  const featured: DatasetCard[] = featuredRaw.map((d) => ({
-    slug: d.name,
-    namespace: d.organization?.name || 'dataset',
-    name: d.title || d.name,
-    description: d.notes ? d.notes.slice(0, 160) : '',
-    groups: (d.groups || []).map((g) => g.name),
-  }))
-  return { props: { featured, orgs: orgs.slice(0, 8), totalCount: count } }
+  return {
+    props: {
+      totalCount: count,
+      tags,
+      groups: groups
+        .filter((g) => g.packageCount > 0)
+        .sort((a, b) => b.packageCount - a.packageCount)
+        .slice(0, 8),
+      orgs: orgs
+        .filter((o) => o.packageCount > 0)
+        .sort((a, b) => b.packageCount - a.packageCount)
+        .slice(0, 6),
+    },
+  }
 }
 
-export default function Home({ featured, orgs, totalCount }: Props) {
+export default function Home({ totalCount, tags, groups, orgs }: Props) {
   const router = useRouter()
   const [query, setQuery] = useState('')
 
@@ -44,14 +80,16 @@ export default function Home({ featured, orgs, totalCount }: Props) {
       </Head>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0c2445] via-[#0f3060] to-[#1a4f7a] py-20 px-4">
-        {/* Watermark */}
+      <section className="relative overflow-hidden py-12 px-4 sm:py-20">
+        {/* Background photo */}
         <img
-          src="/logo-singkawang.png"
+          src="/hero-singkawang.webp"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-20 top-1/2 h-[28rem] w-[28rem] -translate-y-1/2 object-contain opacity-[0.07] select-none"
+          className="absolute inset-0 h-full w-full object-cover"
         />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0c2445]/90 via-[#0f3060]/85 to-[#1a4f7a]/80" />
 
         <div className="relative mx-auto max-w-3xl text-center">
           <img
@@ -88,20 +126,20 @@ export default function Home({ featured, orgs, totalCount }: Props) {
             </button>
           </form>
 
-          {/* Org chips */}
-          {orgs.length > 0 && (
+          {/* Tag chips */}
+          {tags.length > 0 && (
             <div className="mt-6">
               <p className="mb-3 text-xs text-white/40 uppercase tracking-widest">
-                Jelajahi berdasarkan organisasi
+                Jelajahi berdasarkan topik
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {orgs.map((org) => (
+                {tags.map((tag) => (
                   <Link
-                    key={org.name}
-                    href={`/search?org=${encodeURIComponent(org.name)}`}
+                    key={tag}
+                    href={`/search?q=${encodeURIComponent(tag)}`}
                     className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs text-white/75 backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/15 hover:text-white"
                   >
-                    {org.title}
+                    {tag}
                   </Link>
                 ))}
               </div>
@@ -120,30 +158,84 @@ export default function Home({ featured, orgs, totalCount }: Props) {
       <div className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl divide-x divide-gray-100 px-4">
           <div className="py-4 pr-8">
-            <p className="text-2xl font-bold text-[#0c2445]">{totalCount}</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">{totalCount}</p>
             <p className="text-xs text-gray-500">Dataset tersedia</p>
           </div>
           <div className="py-4 px-8">
-            <p className="text-2xl font-bold text-[#0c2445]">{orgs.length}+</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">25+</p>
             <p className="text-xs text-gray-500">Organisasi</p>
           </div>
           <div className="py-4 px-8">
-            <p className="text-2xl font-bold text-[#0c2445]">Terbuka</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">Terbuka</p>
             <p className="text-xs text-gray-500">Akses publik</p>
           </div>
         </div>
       </div>
 
-      {/* ── Featured datasets ── */}
-      {featured.length > 0 && (
+      {/* ── Topik ── */}
+      {groups.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Dataset Terbaru</h2>
-              <p className="mt-0.5 text-sm text-gray-500">Dataset yang baru ditambahkan ke portal</p>
+              <h2 className="text-xl font-bold text-gray-900">Topik</h2>
+              <p className="mt-0.5 text-sm text-gray-500">Jelajahi dataset berdasarkan bidang</p>
             </div>
             <Link
-              href="/search"
+              href="/topik"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+            >
+              Lihat semua &rarr;
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {groups.map((grp) => (
+              <Link
+                key={grp.name}
+                href={`/search?group=${encodeURIComponent(grp.name)}`}
+                className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md"
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  {grp.imageUrl ? (
+                    <img
+                      src={grp.imageUrl}
+                      alt={grp.title}
+                      className="h-10 w-10 rounded-lg object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-2xl">
+                      {TOPIC_ICONS[grp.name] ?? '📂'}
+                    </div>
+                  )}
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                    {grp.packageCount} dataset
+                  </span>
+                </div>
+                <h3 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-emerald-700">
+                  {grp.title}
+                </h3>
+                <div className="flex-1" />
+                <div className="mt-3 border-t border-gray-100 pt-2.5">
+                  <span className="text-[11px] font-medium text-emerald-600 group-hover:text-emerald-700">
+                    Jelajahi &rarr;
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Organisasi ── */}
+      {orgs.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pb-12">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Organisasi</h2>
+              <p className="mt-0.5 text-sm text-gray-500">Instansi pemerintah yang menerbitkan data</p>
+            </div>
+            <Link
+              href="/organisasi"
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
             >
               Lihat semua &rarr;
@@ -151,30 +243,32 @@ export default function Home({ featured, orgs, totalCount }: Props) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((ds) => (
+            {orgs.map((org) => (
               <Link
-                key={`${ds.namespace}/${ds.slug}`}
-                href={datasetHref(ds)}
-                className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                key={org.name}
+                href={`/search?org=${encodeURIComponent(org.name)}`}
+                className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
               >
-                <span className="inline-block self-start rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium capitalize text-blue-700">
-                  {ds.namespace.replace(/-/g, ' ')}
-                </span>
-                <h3 className="mt-3 text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-blue-700">
-                  {ds.name}
-                </h3>
-                {ds.description && (
-                  <p className="mt-1.5 text-xs leading-relaxed text-gray-500 line-clamp-2">
-                    {ds.description}
-                  </p>
+                {org.imageUrl ? (
+                  <img
+                    src={org.imageUrl}
+                    alt={org.title}
+                    className="h-10 w-10 shrink-0 rounded-lg object-contain"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                    <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
                 )}
-                <div className="flex-1" />
-                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                  <span className="text-[11px] text-gray-400">Dataset</span>
-                  <span className="text-[11px] font-medium text-blue-600 group-hover:text-blue-700">
-                    Lihat &rarr;
-                  </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-700">
+                    {org.title}
+                  </p>
+                  <p className="text-xs text-gray-400">{org.packageCount} dataset</p>
                 </div>
+                <span className="shrink-0 text-[11px] font-medium text-blue-600 group-hover:text-blue-700">→</span>
               </Link>
             ))}
           </div>
