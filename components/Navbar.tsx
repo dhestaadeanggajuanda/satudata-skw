@@ -57,20 +57,15 @@ export default function Navbar() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link
           href="/"
-          className="flex items-center gap-3"
           aria-label="Satu Data Kota Singkawang — beranda"
         >
           <img
             src="/logo-satudata.png"
             alt="Satu Data Kota Singkawang"
-            width={120}
-            height={36}
-            className="h-9 w-auto object-contain"
+            width={200}
+            height={48}
+            className="h-12 w-auto object-contain"
           />
-          <div className="leading-tight">
-            <p className="text-sm font-bold text-[#0c2445]">Satu Data Kota Singkawang</p>
-            <p className="hidden text-[11px] tracking-wide text-gray-400 sm:block">Portal Data Terbuka</p>
-          </div>
         </Link>
 
         {/* Desktop nav links */}
