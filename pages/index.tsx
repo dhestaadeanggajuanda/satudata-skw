@@ -3,13 +3,20 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, type CkanGroupCard, type CkanOrgCard } from '../lib/ckan'
+import { ckan, DMS, type CkanGroupCard, type CkanOrgCard, type CkanBlogPost } from '../lib/ckan'
+
+function resolveImageUrl(url: string | null): string | null {
+  if (!url) return null
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `${DMS}${url.startsWith('/') ? '' : '/'}${url}`
+}
 
 type Props = {
   totalCount: number
   tags: string[]
   groups: CkanGroupCard[]
   orgs: CkanOrgCard[]
+  infografis: CkanBlogPost[]
 }
 
 const TOPIC_ICONS: Record<string, string> = {
@@ -42,11 +49,12 @@ const TOPIC_ICONS: Record<string, string> = {
 }
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const [{ count }, tags, groups, orgs] = await Promise.all([
+  const [{ count }, tags, groups, orgs, infografis] = await Promise.all([
     ckan.packageSearch({ offset: 0, limit: 1 }),
     ckan.tagList(),
     ckan.groupList(),
     ckan.organizationListFull(),
+    ckan.blogList(4),
   ])
   return {
     props: {
@@ -60,11 +68,12 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         .filter((o) => o.packageCount > 0)
         .sort((a, b) => b.packageCount - a.packageCount)
         .slice(0, 6),
+      infografis,
     },
   }
 }
 
-export default function Home({ totalCount, tags, groups, orgs }: Props) {
+export default function Home({ totalCount, tags, groups, orgs, infografis }: Props) {
   const router = useRouter()
   const [query, setQuery] = useState('')
 
@@ -171,6 +180,70 @@ export default function Home({ totalCount, tags, groups, orgs }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ── Infografis ── */}
+      {infografis.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Infografis</h2>
+              <p className="mt-0.5 text-sm text-gray-500">Konten visual resmi Pemerintah Kota Singkawang</p>
+            </div>
+            <Link
+              href="/infografis"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+            >
+              Lihat semua &rarr;
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {infografis.map((post) => (
+              <a
+                key={post.name}
+                href={`${DMS}/blog/${post.name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:border-[#0c2445]/30 hover:shadow-md"
+              >
+                <div className="aspect-video w-full overflow-hidden bg-gray-100">
+                  {resolveImageUrl(post.image) ? (
+                    <img
+                      src={resolveImageUrl(post.image)!}
+                      alt={post.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0c2445]/10 to-[#0c2445]/5">
+                      <svg className="h-10 w-10 text-[#0c2445]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-3 group-hover:text-[#0c2445]">
+                    {post.title}
+                  </h3>
+                  {post.publish_date && (
+                    <p className="mt-2 text-[11px] text-gray-400">
+                      {new Date(post.publish_date).toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </p>
+                  )}
+                  <div className="flex-1" />
+                  <div className="mt-3 border-t border-gray-100 pt-2.5">
+                    <span className="text-[11px] font-medium text-[#0c2445]/70 group-hover:text-[#0c2445]">
+                      Baca selengkapnya &rarr;
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Topik ── */}
       {groups.length > 0 && (

@@ -68,6 +68,14 @@ export type CkanActivity = {
   data?: { package?: { title?: string } }
 }
 
+export type CkanBlogPost = {
+  name: string
+  title: string
+  publish_date: string | null
+  image: string | null
+  private: boolean
+}
+
 export type SearchArgs = {
   offset?: number
   limit?: number
@@ -147,6 +155,18 @@ export const ckan = {
     try {
       const result = await ckanAction('tag_list', {})
       return (result as string[]).slice(0, 12)
+    } catch { return [] }
+  },
+  async blogList(limit = 20): Promise<CkanBlogPost[]> {
+    try {
+      const result = await ckanAction('ckanext_pages_list', {
+        page_type: 'blog',
+        private: 'false',
+        order_publish_date: 'true',
+      })
+      return (result as CkanBlogPost[])
+        .filter((p) => !p.private)
+        .slice(0, limit)
     } catch { return [] }
   },
 }
