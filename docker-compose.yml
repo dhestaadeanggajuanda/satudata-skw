@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DMS: ${DMS:-https://satudata.singkawangkota.go.id}
+    image: satudata-skw:latest
+    container_name: satudata-skw
+    ports:
+      - "3000:3000"
+    environment:
+      DMS: ${DMS:-https://satudata.singkawangkota.go.id}
+      NODE_ENV: production
+    restart: unless-stopped
