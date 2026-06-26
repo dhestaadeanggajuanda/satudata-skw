@@ -2,7 +2,7 @@
 // Used ONLY in getStaticProps/getStaticPaths, so it never reaches the browser bundle.
 
 // CKAN backend base URL. Override at deploy time with the DMS env var.
-export const DMS = (process.env.DMS || 'https://satudata.singkawangkota.go.id').replace(/\/+$/, '')
+export const DMS = (process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
 
 // Filters baked in by /portaljs-connect-ckan. Empty array = no filter.
 export const ORG_FILTER: string[] = []
