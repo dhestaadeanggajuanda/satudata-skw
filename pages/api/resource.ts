@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-const ALLOWED_HOST = (process.env.DMS || 'https://satudata.singkawangkota.go.id').replace(/\/+$/, '')
+const ALLOWED_HOST = (process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { url } = req.query
