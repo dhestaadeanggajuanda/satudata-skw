@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, ckanUrl, DMS, type CkanGroupCard, type CkanOrgCard, type CkanBlogPost } from '../lib/ckan'
+import { ckan, ckanUrl, DMS, REVALIDATE, type CkanGroupCard, type CkanOrgCard, type CkanBlogPost } from '../lib/ckan'
 
 type Props = {
   totalCount: number
@@ -64,6 +64,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         .slice(0, 6),
       infografis,
     },
+    revalidate: REVALIDATE,
   }
 }
 

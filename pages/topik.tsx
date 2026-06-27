@@ -1,12 +1,12 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import type { GetStaticProps } from 'next'
-import { ckan, type CkanGroupCard } from '../lib/ckan'
+import { ckan, REVALIDATE, type CkanGroupCard } from '../lib/ckan'
 
 export const getStaticProps: GetStaticProps<{ groups: CkanGroupCard[] }> = async () => {
   const groups = await ckan.groupList()
   const sorted = groups.sort((a, b) => b.packageCount - a.packageCount)
-  return { props: { groups: sorted } }
+  return { props: { groups: sorted }, revalidate: REVALIDATE }
 }
 
 // Topic icon mapping for common group slugs

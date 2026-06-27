@@ -1,12 +1,12 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import type { GetStaticProps } from 'next'
-import { ckan, type CkanOrgCard } from '../lib/ckan'
+import { ckan, REVALIDATE, type CkanOrgCard } from '../lib/ckan'
 
 export const getStaticProps: GetStaticProps<{ orgs: CkanOrgCard[] }> = async () => {
   const orgs = await ckan.organizationListFull()
   const sorted = orgs.sort((a, b) => b.packageCount - a.packageCount)
-  return { props: { orgs: sorted } }
+  return { props: { orgs: sorted }, revalidate: REVALIDATE }
 }
 
 export default function OrganisasiPage({ orgs }: { orgs: CkanOrgCard[] }) {

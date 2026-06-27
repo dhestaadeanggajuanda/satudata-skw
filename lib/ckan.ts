@@ -39,6 +39,11 @@ export function ckanUrl(raw: string | null | undefined): string {
   }
 }
 
+// ISR revalidate interval (seconds) for all getStaticProps. Pages regenerate
+// server-side at most once per interval, so new CKAN datasets appear without a
+// rebuild. Override via env REVALIDATE_SECONDS. Default 5 minutes.
+export const REVALIDATE = Number(process.env.REVALIDATE_SECONDS) || 300
+
 // Filters baked in by /portaljs-connect-ckan. Empty array = no filter.
 export const ORG_FILTER: string[] = []
 export const GROUP_FILTER: string[] = []

@@ -2,11 +2,11 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, ckanUrl, DMS, type CkanBlogPost } from '../lib/ckan'
+import { ckan, ckanUrl, DMS, REVALIDATE, type CkanBlogPost } from '../lib/ckan'
 
 export const getStaticProps: GetStaticProps<{ posts: CkanBlogPost[] }> = async () => {
   const posts = await ckan.blogList(100)
-  return { props: { posts } }
+  return { props: { posts }, revalidate: REVALIDATE }
 }
 
 export default function InfografisPage({ posts }: { posts: CkanBlogPost[] }) {
