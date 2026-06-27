@@ -3,7 +3,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import type { GetStaticPaths, GetStaticProps } from 'next'
-import { ckan, ckanUrl, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, type CkanOrgDetail, type CkanActivity } from '../../lib/ckan'
+import { ckan, ckanUrl, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, REVALIDATE, type CkanOrgDetail, type CkanActivity } from '../../lib/ckan'
 
 const Table = dynamic(
   () => import('../../components/Table').then((mod) => ({ default: mod.Table })),
@@ -100,7 +100,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
     paths: datasets.map((d) => ({
       params: { owner: '@' + (d.organization?.name || 'dataset'), slug: d.name },
     })),
-    fallback: false,
+    // Datasets added after build render on first request, then cache.
+    fallback: 'blocking',
   }
 }
 
@@ -176,9 +177,9 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
       activities,
       orgInfo,
     }
-    return { props: { dataset } }
+    return { props: { dataset }, revalidate: REVALIDATE }
   } catch {
-    return { notFound: true }
+    return { notFound: true, revalidate: REVALIDATE }
   }
 }
 

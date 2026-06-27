@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, datasetHref, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, type DatasetCard } from '../lib/ckan'
+import { ckan, datasetHref, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, REVALIDATE, type DatasetCard } from '../lib/ckan'
 
 const PAGE_SIZE = 20
 
@@ -22,7 +22,7 @@ export const getStaticProps: GetStaticProps<{ datasets: DatasetCard[]; count: nu
     description: d.notes ? d.notes.slice(0, 200) : '',
     groups: (d.groups || []).map((g) => g.name),
   }))
-  return { props: { datasets: cards, count } }
+  return { props: { datasets: cards, count }, revalidate: REVALIDATE }
 }
 
 type OrgEntry = { name: string; title: string; count: number }
