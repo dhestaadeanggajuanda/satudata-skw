@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-const ALLOWED_HOST = (process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
+// Resource URLs are normalized to the public CKAN host (see ckanUrl), so the proxy
+// allowlist must match that host — not the (possibly internal) fetch host in DMS.
+const ALLOWED_HOST = (process.env.CKAN_PUBLIC_URL || process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { url } = req.query
