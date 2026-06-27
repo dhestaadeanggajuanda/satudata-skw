@@ -1,8 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// Resource URLs are normalized to the public CKAN host (see ckanUrl), so the proxy
-// allowlist must match that host — not the (possibly internal) fetch host in DMS.
-const ALLOWED_HOST = (process.env.CKAN_PUBLIC_URL || process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
+// Browser-facing resource URLs use the PUBLIC CKAN host (see ckanUrl), so the proxy
+// validates incoming URLs against that host.
+const PUBLIC_BASE = (process.env.CKAN_PUBLIC_URL || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
+// But the actual server-side fetch goes to the (possibly internal LAN) host in DMS,
+// which is always resolvable from the container — no public DNS/SSL needed at runtime.
+const FETCH_BASE = (process.env.DMS || PUBLIC_BASE).replace(/\/+$/, '')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { url } = req.query
@@ -17,13 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'invalid url' })
   }
 
-  const origin = `${parsed.protocol}//${parsed.host}`
-  if (!ALLOWED_HOST.startsWith(origin)) {
+  if (parsed.origin !== new URL(PUBLIC_BASE).origin) {
     return res.status(403).json({ error: 'url not from allowed host' })
   }
 
+  // Re-base onto the internal fetch host for the server-side request.
+  const target = `${FETCH_BASE}${parsed.pathname}${parsed.search}`
+
   try {
-    const upstream = await fetch(url, { headers: { Accept: '*/*' } })
+    const upstream = await fetch(target, { headers: { Accept: '*/*' } })
     const contentType = upstream.headers.get('content-type') ?? 'text/plain'
     const body = await upstream.arrayBuffer()
     res.setHeader('Content-Type', contentType)
