@@ -3,13 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, DMS, type CkanGroupCard, type CkanOrgCard, type CkanBlogPost } from '../lib/ckan'
-
-function resolveImageUrl(url: string | null): string | null {
-  if (!url) return null
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return `${DMS}${url.startsWith('/') ? '' : '/'}${url}`
-}
+import { ckan, ckanUrl, DMS, type CkanGroupCard, type CkanOrgCard, type CkanBlogPost } from '../lib/ckan'
 
 type Props = {
   totalCount: number
@@ -206,7 +200,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {infografis.map((post) => {
-              const imgSrc = resolveImageUrl(post.image)
+              const imgSrc = ckanUrl(post.image) || null
               const blogUrl = `${DMS}/blog/${post.name}`
               return (
                 <button
