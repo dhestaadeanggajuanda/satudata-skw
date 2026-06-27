@@ -23,6 +23,10 @@ COPY . .
 ARG DMS
 ENV DMS=${DMS}
 
+# Public CKAN host that browser-facing URLs (downloads/images) are re-based onto.
+ARG CKAN_PUBLIC_URL
+ENV CKAN_PUBLIC_URL=${CKAN_PUBLIC_URL}
+
 RUN npm run build
 
 # ────────────────────────────────────────────────────────────────

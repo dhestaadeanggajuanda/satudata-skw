@@ -1,25 +1,37 @@
 // Minimal server-side CKAN client — plain fetch, no dependency, no React coupling.
 // Used ONLY in getStaticProps/getStaticPaths, so it never reaches the browser bundle.
 
-// CKAN backend base URL. Override at deploy time with the DMS env var.
+// CKAN base URL used to FETCH the API (getStaticProps). May be an internal LAN
+// IP at build time for speed/reliability. Override with the DMS env var.
 export const DMS = (process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
 
-// Hosts that CKAN may have wrongly used as site_url (e.g. the portal domain),
-// causing resource/upload/image URLs to point at the portal instead of CKAN.
-// Override via env (comma-separated) if needed.
-const REWRITE_HOSTS = (process.env.CKAN_REWRITE_HOSTS || 'satudata.singkawangkota.go.id')
-  .split(',').map((s) => s.trim()).filter(Boolean)
+// PUBLIC CKAN base URL — the host that browser-facing URLs (resource downloads,
+// uploads, images) must point to. Kept separate from DMS so the build can fetch
+// via an internal host while still rendering public URLs. Override via env.
+export const CKAN_PUBLIC = (process.env.CKAN_PUBLIC_URL || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
+
+// Hosts whose URLs must be re-based onto CKAN_PUBLIC: the fetch host (DMS, which
+// CKAN may echo into URLs when its site_url isn't authoritative — e.g. an internal
+// IP), the portal domain (stale Solr snapshots), and the internal IP. Override via
+// env (comma-separated).
+const dmsHost = (() => { try { return new URL(DMS).host } catch { return '' } })()
+const REWRITE_HOSTS = new Set([
+  dmsHost,
+  ...(process.env.CKAN_REWRITE_HOSTS ||
+      'satudata.singkawangkota.go.id,172.16.20.229:5000,172.16.20.229')
+    .split(',').map((s) => s.trim()).filter(Boolean),
+])
 
 // Normalize a CKAN-emitted URL (resource download, upload, image). Relative URLs
-// and absolute URLs whose host is in REWRITE_HOSTS are re-based onto DMS (the real
-// CKAN host); genuinely external resource links are left untouched.
+// and absolute URLs whose host is the public host or in REWRITE_HOSTS are re-based
+// onto CKAN_PUBLIC; genuinely external resource links are left untouched.
 export function ckanUrl(raw: string | null | undefined): string {
   if (!raw) return ''
   try {
-    const u = new URL(raw, DMS) // handles both relative and absolute
-    const dmsHost = new URL(DMS).host
-    if (u.host === dmsHost || REWRITE_HOSTS.includes(u.host)) {
-      return `${DMS}${u.pathname}${u.search}`
+    const u = new URL(raw, CKAN_PUBLIC) // handles both relative and absolute
+    const pubHost = new URL(CKAN_PUBLIC).host
+    if (u.host === pubHost || REWRITE_HOSTS.has(u.host)) {
+      return `${CKAN_PUBLIC}${u.pathname}${u.search}`
     }
     return u.href // external link — leave as-is
   } catch {

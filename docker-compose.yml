@@ -8,11 +8,14 @@ services:
       args:
         # CKAN backend (bukan domain frontend) — di-bake ke HTML statis saat build.
         DMS: ${DMS:-https://data.singkawangkota.go.id}
+        # Host publik untuk URL unduh/gambar yang sampai ke browser.
+        CKAN_PUBLIC_URL: ${CKAN_PUBLIC_URL:-https://data.singkawangkota.go.id}
     image: satudata-skw:latest
     container_name: satudata-skw
     ports:
       - "3000:3000"
     environment:
       DMS: ${DMS:-https://data.singkawangkota.go.id}
+      CKAN_PUBLIC_URL: ${CKAN_PUBLIC_URL:-https://data.singkawangkota.go.id}
       NODE_ENV: production
     restart: unless-stopped
