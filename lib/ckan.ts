@@ -181,6 +181,18 @@ export const ckan = {
       packageCount: g.package_count ?? 0,
     }))
   },
+  async getGroupDetails(slug: string): Promise<CkanGroupCard | null> {
+    try {
+      const g = await ckanAction('group_show', { id: slug, include_datasets: 'false' })
+      return {
+        name: g.name,
+        title: g.title || g.name,
+        description: g.description || '',
+        imageUrl: ckanUrl(g.image_display_url),
+        packageCount: g.package_count ?? 0,
+      }
+    } catch { return null }
+  },
   async getOrganizationDetails(slug: string): Promise<CkanOrgDetail | null> {
     try {
       return await ckanAction('organization_show', { id: slug, include_datasets: 'false' })
