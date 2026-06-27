@@ -4,6 +4,29 @@
 // CKAN backend base URL. Override at deploy time with the DMS env var.
 export const DMS = (process.env.DMS || 'https://data.singkawangkota.go.id').replace(/\/+$/, '')
 
+// Hosts that CKAN may have wrongly used as site_url (e.g. the portal domain),
+// causing resource/upload/image URLs to point at the portal instead of CKAN.
+// Override via env (comma-separated) if needed.
+const REWRITE_HOSTS = (process.env.CKAN_REWRITE_HOSTS || 'satudata.singkawangkota.go.id')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+
+// Normalize a CKAN-emitted URL (resource download, upload, image). Relative URLs
+// and absolute URLs whose host is in REWRITE_HOSTS are re-based onto DMS (the real
+// CKAN host); genuinely external resource links are left untouched.
+export function ckanUrl(raw: string | null | undefined): string {
+  if (!raw) return ''
+  try {
+    const u = new URL(raw, DMS) // handles both relative and absolute
+    const dmsHost = new URL(DMS).host
+    if (u.host === dmsHost || REWRITE_HOSTS.includes(u.host)) {
+      return `${DMS}${u.pathname}${u.search}`
+    }
+    return u.href // external link — leave as-is
+  } catch {
+    return raw
+  }
+}
+
 // Filters baked in by /portaljs-connect-ckan. Empty array = no filter.
 export const ORG_FILTER: string[] = []
 export const GROUP_FILTER: string[] = []
@@ -127,7 +150,7 @@ export const ckan = {
       name: o.name,
       title: o.title || o.name,
       description: o.description || '',
-      imageUrl: o.image_display_url || '',
+      imageUrl: ckanUrl(o.image_display_url),
       packageCount: o.package_count ?? 0,
     }))
   },
@@ -137,7 +160,7 @@ export const ckan = {
       name: g.name,
       title: g.title || g.name,
       description: g.description || '',
-      imageUrl: g.image_display_url || '',
+      imageUrl: ckanUrl(g.image_display_url),
       packageCount: g.package_count ?? 0,
     }))
   },
@@ -167,6 +190,7 @@ export const ckan = {
       return (result as CkanBlogPost[])
         .filter((p) => !p.private)
         .slice(0, limit)
+        .map((p) => ({ ...p, image: p.image ? ckanUrl(p.image) : null }))
     } catch { return [] }
   },
 }

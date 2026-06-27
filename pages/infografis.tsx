@@ -2,13 +2,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import type { GetStaticProps } from 'next'
-import { ckan, DMS, type CkanBlogPost } from '../lib/ckan'
-
-function resolveImageUrl(url: string | null): string | null {
-  if (!url) return null
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return `${DMS}${url.startsWith('/') ? '' : '/'}${url}`
-}
+import { ckan, ckanUrl, DMS, type CkanBlogPost } from '../lib/ckan'
 
 export const getStaticProps: GetStaticProps<{ posts: CkanBlogPost[] }> = async () => {
   const posts = await ckan.blogList(100)
@@ -57,7 +51,7 @@ export default function InfografisPage({ posts }: { posts: CkanBlogPost[] }) {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {posts.map((post) => {
-              const imgSrc = resolveImageUrl(post.image)
+              const imgSrc = ckanUrl(post.image) || null
               const blogUrl = `${DMS}/blog/${post.name}`
               return (
                 <button

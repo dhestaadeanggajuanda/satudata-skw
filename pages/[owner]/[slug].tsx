@@ -3,7 +3,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import type { GetStaticPaths, GetStaticProps } from 'next'
-import { ckan, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, type CkanOrgDetail, type CkanActivity } from '../../lib/ckan'
+import { ckan, ckanUrl, ORG_FILTER, GROUP_FILTER, MAX_DATASETS, type CkanOrgDetail, type CkanActivity } from '../../lib/ckan'
 
 const Table = dynamic(
   () => import('../../components/Table').then((mod) => ({ default: mod.Table })),
@@ -136,7 +136,7 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
           name: orgDetail.name,
           title: orgDetail.title,
           description: orgDetail.description || '',
-          imageUrl: orgDetail.image_display_url || '',
+          imageUrl: ckanUrl(orgDetail.image_display_url),
           packageCount: orgDetail.package_count || 0,
           createdDate: formatDate(orgDetail.created || ''),
         }
@@ -162,7 +162,7 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
           id: r.id,
           name: r.name || r.id,
           format: r.format || '',
-          url: r.url || '',
+          url: ckanUrl(r.url),
           description: r.description || '',
           isTabular: TABULAR.includes(fmt),
         }
@@ -170,7 +170,7 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
       groups: (d.groups || []).map((g) => ({
         name: g.name,
         title: g.title,
-        imageUrl: g.image_display_url || '',
+        imageUrl: ckanUrl(g.image_display_url),
         packageCount: g.package_count || 0,
       })),
       activities,
