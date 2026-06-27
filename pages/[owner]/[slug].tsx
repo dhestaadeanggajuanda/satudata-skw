@@ -112,11 +112,17 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
     const d = await ckan.getDatasetDetails(slug)
     const datasetId = d.id || slug
 
-    // Parallel fetch: org details + activity stream
-    const [orgDetail, rawActivities] = await Promise.all([
+    // Parallel fetch: org details + activity stream + live group details.
+    // The groups embedded in package_show carry a stale image snapshot, so we
+    // fetch each group live (group_show) to render the current icon.
+    const [orgDetail, rawActivities, liveGroups] = await Promise.all([
       ckan.getOrganizationDetails(d.organization?.name || ''),
       ckan.getDatasetActivity(datasetId),
+      Promise.all((d.groups || []).map((g) => ckan.getGroupDetails(g.name))),
     ])
+    const liveGroupMap = new Map(
+      liveGroups.filter(Boolean).map((g) => [g!.name, g!])
+    )
 
     // Activity fallback if API returns unauthorized
     const activities: ActivityItem[] =
@@ -168,12 +174,15 @@ export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({
           isTabular: TABULAR.includes(fmt),
         }
       }),
-      groups: (d.groups || []).map((g) => ({
-        name: g.name,
-        title: g.title,
-        imageUrl: ckanUrl(g.image_display_url),
-        packageCount: g.package_count || 0,
-      })),
+      groups: (d.groups || []).map((g) => {
+        const live = liveGroupMap.get(g.name)
+        return {
+          name: g.name,
+          title: live?.title ?? g.title,
+          imageUrl: live ? live.imageUrl : ckanUrl(g.image_display_url),
+          packageCount: live ? live.packageCount : (g.package_count || 0),
+        }
+      }),
       activities,
       orgInfo,
     }
