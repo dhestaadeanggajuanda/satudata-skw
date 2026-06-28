@@ -7,7 +7,15 @@ const PUBLIC_BASE = (process.env.CKAN_PUBLIC_URL || 'https://data.singkawangkota
 // which is always resolvable from the container — no public DNS/SSL needed at runtime.
 const FETCH_BASE = (process.env.DMS || PUBLIC_BASE).replace(/\/+$/, '')
 
+// Hanya path resource/aset CKAN yang sah boleh diproksikan (kurangi permukaan SSRF).
+const ALLOWED_PATH = /^\/(dataset|uploads)\//
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    return res.status(405).json({ error: 'method not allowed' })
+  }
+
   const { url } = req.query
   if (!url || typeof url !== 'string') {
     return res.status(400).json({ error: 'url query param required' })
@@ -22,6 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (parsed.origin !== new URL(PUBLIC_BASE).origin) {
     return res.status(403).json({ error: 'url not from allowed host' })
+  }
+  if (!ALLOWED_PATH.test(parsed.pathname)) {
+    return res.status(403).json({ error: 'path not allowed' })
   }
 
   // Re-base onto the internal fetch host for the server-side request.
