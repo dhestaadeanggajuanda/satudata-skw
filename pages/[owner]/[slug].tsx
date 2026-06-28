@@ -108,8 +108,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps<{ dataset: DatasetView }> = async ({ params }) => {
   const namespace = String(params?.owner ?? '').replace(/^@/, '')
   const slug = String(params?.slug)
+  // Tolak slug malformed lebih awal (CKAN package name = huruf kecil/angka/strip).
+  if (!/^[a-z0-9-]+$/.test(slug)) return { notFound: true, revalidate: REVALIDATE }
   try {
     const d = await ckan.getDatasetDetails(slug)
+    // Tegakkan URL kanonik: namespace harus = org dataset (atau 'dataset' bila tak ada org).
+    // Mencegah sembarang `owner` merender halaman (sekaligus menutup FP SQLi/Path-Traversal ZAP).
+    const expectedNs = d.organization?.name || 'dataset'
+    if (namespace !== expectedNs) return { notFound: true, revalidate: REVALIDATE }
     const datasetId = d.id || slug
 
     // Parallel fetch: org details + activity stream + live group details.
