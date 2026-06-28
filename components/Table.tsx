@@ -31,7 +31,33 @@ export interface TableProps {
   cols?: Col[]
   csv?: string
   url?: string
+  format?: string
   fullWidth?: boolean
+}
+
+// Convert an array-of-arrays (SheetJS `sheet_to_json` with header:1) into the
+// Row/Col shape the table uses. The first non-empty row is the header; header
+// keys are made unique (blank/duplicate → col_<i>).
+function sheetToTable(aoa: unknown[][]): { rows: Row[]; fields: Col[] } {
+  const headerIdx = aoa.findIndex((r) => Array.isArray(r) && r.some((c) => String(c ?? '').trim() !== ''))
+  if (headerIdx === -1) return { rows: [], fields: [] }
+  const header = aoa[headerIdx]
+  const seen = new Set<string>()
+  const fields: Col[] = header.map((h, i) => {
+    let name = String(h ?? '').trim()
+    let key = name || `col_${i}`
+    while (seen.has(key)) key = `${key}_${i}`
+    seen.add(key)
+    return { key, name: name || `Kolom ${i + 1}` }
+  })
+  const rows: Row[] = aoa.slice(headerIdx + 1)
+    .filter((r) => Array.isArray(r) && r.some((c) => String(c ?? '').trim() !== ''))
+    .map((r) => {
+      const obj: Row = {}
+      fields.forEach((f, i) => { obj[f.key] = (r[i] ?? '') as string | number })
+      return obj
+    })
+  return { rows, fields }
 }
 
 const globalFilterFn: FilterFn<Row> = (row, columnId, filterValue: string) => {
@@ -39,7 +65,7 @@ const globalFilterFn: FilterFn<Row> = (row, columnId, filterValue: string) => {
   return value.includes(filterValue.toLowerCase())
 }
 
-export function Table({ data: initialData = [], cols: initialCols = [], csv = '', url = '', fullWidth = false }: TableProps) {
+export function Table({ data: initialData = [], cols: initialCols = [], csv = '', url = '', format = '', fullWidth = false }: TableProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [globalFilter, setGlobalFilter] = useState('')
@@ -70,21 +96,37 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
 
   useEffect(() => {
     if (!url) return
+    let cancelled = false
     setIsLoading(true)
     setError(null)
-    fetch(proxyUrl(url))
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status} — ${r.statusText}`)
-        return r.text()
-      })
-      .then((text) => {
-        const { rows, fields } = parseCsv(text)
-        setData(rows)
-        setColumns(fields)
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setIsLoading(false))
-  }, [url])
+    const fmt = (format || '').toLowerCase()
+    ;(async () => {
+      try {
+        const res = await fetch(proxyUrl(url))
+        if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`)
+        let parsed: { rows: Row[]; fields: Col[] }
+        if (fmt === 'xlsx' || fmt === 'xls') {
+          const XLSX = await import('xlsx')
+          const wb = XLSX.read(await res.arrayBuffer(), { type: 'array' })
+          const sheet = wb.Sheets[wb.SheetNames[0]]
+          const aoa = sheet
+            ? (XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false }) as unknown[][])
+            : []
+          parsed = sheetToTable(aoa)
+        } else {
+          parsed = parseCsv(await res.text())
+        }
+        if (cancelled) return
+        setData(parsed.rows)
+        setColumns(parsed.fields)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [url, format])
 
   const columnHelper = createColumnHelper<Row>()
   const tableCols = useMemo(

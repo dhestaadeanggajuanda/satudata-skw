@@ -57,7 +57,7 @@ type DatasetView = {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-const TABULAR = ['csv', 'tsv']
+const TABULAR = ['csv', 'tsv', 'xlsx', 'xls']
 
 function formatDate(iso: string): string {
   if (!iso) return '-'
@@ -436,7 +436,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                     </span>
                   )}
                 </p>
-                <Table url={firstTabular.url} />
+                <Table url={firstTabular.url} format={firstTabular.format} />
               </section>
             )}
 
