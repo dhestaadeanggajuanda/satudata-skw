@@ -57,7 +57,7 @@ type DatasetView = {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-const TABULAR = ['csv', 'tsv', 'xlsx', 'xls']
+const TABULAR = ['csv', 'tsv', 'xlsx']
 
 function formatDate(iso: string): string {
   if (!iso) return '-'
