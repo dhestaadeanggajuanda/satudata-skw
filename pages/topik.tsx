@@ -50,15 +50,15 @@ export default function TopikPage({ groups }: { groups: CkanGroupCard[] }) {
       </Head>
 
       {/* Header band */}
-      <div className="border-b border-gray-200 bg-white py-5 shadow-sm">
+      <div className="border-b border-gray-200 bg-white py-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl px-4">
-          <nav className="mb-1 text-xs text-gray-400">
+          <nav className="mb-1 text-xs text-gray-400 dark:text-gray-500">
             <Link href="/" className="hover:text-gray-600">Beranda</Link>
             <span className="mx-1.5">/</span>
             <span>Topik</span>
           </nav>
-          <h1 className="text-xl font-bold text-gray-900">Topik</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Topik</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {groups.length} topik tersedia — temukan dataset berdasarkan bidang
           </p>
         </div>
@@ -71,7 +71,7 @@ export default function TopikPage({ groups }: { groups: CkanGroupCard[] }) {
             <Link
               key={grp.name}
               href={`/search?group=${encodeURIComponent(grp.name)}`}
-              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:border-emerald-700"
             >
               {/* Icon or image */}
               <div className="mb-3 flex items-center gap-3">
@@ -86,22 +86,22 @@ export default function TopikPage({ groups }: { groups: CkanGroupCard[] }) {
                     {TOPIC_ICONS[grp.name] ?? '📂'}
                   </div>
                 )}
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                   {grp.packageCount} dataset
                 </span>
               </div>
 
-              <h2 className="text-sm font-semibold leading-snug text-gray-900 group-hover:text-emerald-700">
+              <h2 className="text-sm font-semibold leading-snug text-gray-900 group-hover:text-emerald-700 dark:text-gray-100 dark:group-hover:text-emerald-400">
                 {grp.title}
               </h2>
               {grp.description && (
-                <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2">
+                <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2 dark:text-gray-400">
                   {grp.description}
                 </p>
               )}
 
               <div className="flex-1" />
-              <div className="mt-3 border-t border-gray-100 pt-2.5">
+              <div className="mt-3 border-t border-gray-100 pt-2.5 dark:border-gray-800">
                 <span className="text-[11px] font-medium text-emerald-600 group-hover:text-emerald-700">
                   Jelajahi &rarr;
                 </span>
@@ -113,21 +113,21 @@ export default function TopikPage({ groups }: { groups: CkanGroupCard[] }) {
         {/* Topics with no data */}
         {empty.length > 0 && (
           <div className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-gray-400">
+            <h2 className="mb-4 text-sm font-semibold text-gray-400 dark:text-gray-500">
               Belum ada dataset ({empty.length} topik)
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {empty.map((grp) => (
                 <div
                   key={grp.name}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4 opacity-50"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4 opacity-50 dark:border-gray-800 dark:bg-gray-900"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-xl">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-xl dark:bg-gray-800">
                     {TOPIC_ICONS[grp.name] ?? '📂'}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">{grp.title}</p>
-                    <p className="text-xs text-gray-400">0 dataset</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{grp.title}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">0 dataset</p>
                   </div>
                 </div>
               ))}

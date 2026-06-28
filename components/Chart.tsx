@@ -130,21 +130,21 @@ export function Chart({
 
   if (loading) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-lg bg-gray-50 text-sm text-gray-400">
+      <div className="flex min-h-[200px] items-center justify-center rounded-lg bg-gray-50 text-sm text-gray-400 dark:bg-gray-800 dark:text-gray-500">
         Memuat chart…
       </div>
     )
   }
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
+      <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-300">
         Gagal memuat data: {error}
       </div>
     )
   }
   if (chartData.length === 0) {
     return (
-      <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-400">Tidak ada data.</div>
+      <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-400 dark:bg-gray-800 dark:text-gray-500">Tidak ada data.</div>
     )
   }
 

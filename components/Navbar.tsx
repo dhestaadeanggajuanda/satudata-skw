@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
+import ThemeToggle from './ThemeToggle'
 import {
   CircleStackIcon,
   TagIcon,
@@ -52,7 +53,7 @@ export default function Navbar() {
   }, [])
 
   return (
-    <header className="border-b border-gray-200 bg-white shadow-sm">
+    <header className="border-b border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
       {/* Accent bar */}
       <div className="h-1 bg-gradient-to-r from-[#0c2445] to-[#1a4f7a]" />
 
@@ -80,8 +81,8 @@ export default function Navbar() {
                 href={href}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-[#0c2445]/5 text-[#0c2445]'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445]'
+                    ? 'bg-[#0c2445]/5 text-[#0c2445] dark:bg-white/10 dark:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -96,8 +97,8 @@ export default function Navbar() {
               onClick={() => setDropdownOpen((v) => !v)}
               className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 dropdownOpen
-                  ? 'bg-[#0c2445]/5 text-[#0c2445]'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445]'
+                  ? 'bg-[#0c2445]/5 text-[#0c2445] dark:bg-white/10 dark:text-white'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
               }`}
             >
               <Squares2X2Icon className="h-4 w-4" />
@@ -113,14 +114,14 @@ export default function Navbar() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1.5 w-52 rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-1.5 w-52 rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-900">
                 {APP_LINKS.map(({ href, label, icon: Icon }) => (
                   <a
                     key={href}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#0c2445]"
+                    className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#0c2445] dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     onClick={() => setDropdownOpen(false)}
                   >
                     <span className="flex items-center gap-2">
@@ -133,14 +134,18 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          <ThemeToggle />
         </div>
 
-        {/* Hamburger button — mobile only */}
-        <button
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:hidden"
-          aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
-          onClick={() => setMobileOpen((v) => !v)}
-        >
+        {/* Mobile controls */}
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
+            onClick={() => setMobileOpen((v) => !v)}
+          >
           {mobileOpen ? (
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -150,12 +155,13 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           )}
-        </button>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu dropdown */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white px-4 py-3 md:hidden">
+        <div className="border-t border-gray-100 bg-white px-4 py-3 md:hidden dark:border-gray-800 dark:bg-gray-900">
           <div className="flex flex-col gap-1">
             {NAV_LINKS.map(({ href, label, icon: Icon }) => {
               const isActive = router.pathname === href
@@ -165,8 +171,8 @@ export default function Navbar() {
                   href={href}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-[#0c2445]/5 text-[#0c2445]'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445]'
+                      ? 'bg-[#0c2445]/5 text-[#0c2445] dark:bg-white/10 dark:text-white'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-[#0c2445] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -186,7 +192,7 @@ export default function Navbar() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-[#0c2445]"
+                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-[#0c2445] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                 >
                   <span className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-gray-400" />

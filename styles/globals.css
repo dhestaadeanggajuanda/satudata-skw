@@ -6,6 +6,9 @@
   body {
     background-color: #f8fafc;
   }
+  .dark body {
+    background-color: #0b1220;
+  }
 }
 
 @layer utilities {
@@ -15,4 +18,37 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* ── Aksesibilitas ─────────────────────────────────────────────────────────
+   Diterapkan via class pada <html> oleh AccessibilityWidget + skrip anti-flicker
+   di _document. Tanpa font eksternal agar patuh CSP (font-src 'self' data:). */
+
+/* Kontras tinggi */
+.a11y-contrast {
+  filter: contrast(1.25);
+}
+
+/* Sorot / garis bawah semua tautan */
+.a11y-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+/* Font ramah dibaca (disleksia) — pakai font sistem */
+.a11y-readable,
+.a11y-readable * {
+  font-family: Verdana, Tahoma, 'Trebuchet MS', sans-serif !important;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+
+/* Kurangi animasi / gerakan */
+.a11y-reduce-motion *,
+.a11y-reduce-motion *::before,
+.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }
