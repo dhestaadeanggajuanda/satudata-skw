@@ -35,9 +35,20 @@ export interface TableProps {
   fullWidth?: boolean
 }
 
-// Convert an array-of-arrays (SheetJS `sheet_to_json` with header:1) into the
-// Row/Col shape the table uses. The first non-empty row is the header; header
-// keys are made unique (blank/duplicate → col_<i>).
+// Coerce a spreadsheet cell to a primitive renderable value. read-excel-file
+// returns typed cells (Date/number/boolean/null) — Dates/objects must not reach
+// JSX as-is (React can't render them).
+function cellToValue(c: unknown): string | number {
+  if (c === null || c === undefined) return ''
+  if (typeof c === 'number') return c
+  if (typeof c === 'boolean') return c ? 'true' : 'false'
+  if (c instanceof Date) return c.toLocaleDateString('id-ID')
+  return String(c)
+}
+
+// Convert an array-of-arrays (a sheet's `data`) into the Row/Col shape the table
+// uses. The first non-empty row is the header; header keys are made unique
+// (blank/duplicate → col_<i>).
 function sheetToTable(aoa: unknown[][]): { rows: Row[]; fields: Col[] } {
   const headerIdx = aoa.findIndex((r) => Array.isArray(r) && r.some((c) => String(c ?? '').trim() !== ''))
   if (headerIdx === -1) return { rows: [], fields: [] }
@@ -54,7 +65,7 @@ function sheetToTable(aoa: unknown[][]): { rows: Row[]; fields: Col[] } {
     .filter((r) => Array.isArray(r) && r.some((c) => String(c ?? '').trim() !== ''))
     .map((r) => {
       const obj: Row = {}
-      fields.forEach((f, i) => { obj[f.key] = (r[i] ?? '') as string | number })
+      fields.forEach((f, i) => { obj[f.key] = cellToValue(r[i]) })
       return obj
     })
   return { rows, fields }
@@ -105,13 +116,10 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
         const res = await fetch(proxyUrl(url))
         if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`)
         let parsed: { rows: Row[]; fields: Col[] }
-        if (fmt === 'xlsx' || fmt === 'xls') {
-          const XLSX = await import('xlsx')
-          const wb = XLSX.read(await res.arrayBuffer(), { type: 'array' })
-          const sheet = wb.Sheets[wb.SheetNames[0]]
-          const aoa = sheet
-            ? (XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false }) as unknown[][])
-            : []
+        if (fmt === 'xlsx') {
+          const readXlsxFile = (await import('read-excel-file/browser')).default
+          const sheets = await readXlsxFile(await res.blob())
+          const aoa = (sheets[0]?.data ?? []) as unknown[][]
           parsed = sheetToTable(aoa)
         } else {
           parsed = parseCsv(await res.text())
