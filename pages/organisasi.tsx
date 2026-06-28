@@ -20,15 +20,15 @@ export default function OrganisasiPage({ orgs }: { orgs: CkanOrgCard[] }) {
       </Head>
 
       {/* Header band */}
-      <div className="border-b border-gray-200 bg-white py-5 shadow-sm">
+      <div className="border-b border-gray-200 bg-white py-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl px-4">
-          <nav className="mb-1 text-xs text-gray-400">
-            <Link href="/" className="hover:text-gray-600">Beranda</Link>
+          <nav className="mb-1 text-xs text-gray-400 dark:text-gray-500">
+            <Link href="/" className="hover:text-gray-600 dark:hover:text-gray-300">Beranda</Link>
             <span className="mx-1.5">/</span>
             <span>Organisasi</span>
           </nav>
-          <h1 className="text-xl font-bold text-gray-900">Organisasi</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Organisasi</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             {orgs.length} instansi pemerintah Kota Singkawang yang menerbitkan data
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function OrganisasiPage({ orgs }: { orgs: CkanOrgCard[] }) {
         {/* Orgs with no data yet */}
         {empty.length > 0 && (
           <div className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-gray-400">
+            <h2 className="mb-4 text-sm font-semibold text-gray-400 dark:text-gray-500">
               Belum ada dataset ({empty.length} instansi)
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,10 +62,10 @@ export default function OrganisasiPage({ orgs }: { orgs: CkanOrgCard[] }) {
 
 function OrgCard({ org, muted = false }: { org: CkanOrgCard; muted?: boolean }) {
   const content = (
-    <div className={`flex flex-col rounded-xl border bg-white p-5 shadow-sm transition-all ${
+    <div className={`flex flex-col rounded-xl border bg-white p-5 shadow-sm transition-all dark:bg-gray-900 ${
       muted
-        ? 'border-gray-100 opacity-60'
-        : 'border-gray-200 hover:border-blue-200 hover:shadow-md'
+        ? 'border-gray-100 opacity-60 dark:border-gray-800'
+        : 'border-gray-200 hover:border-blue-200 hover:shadow-md dark:border-gray-700 dark:hover:border-blue-700'
     }`}>
       <div className="flex items-start gap-3">
         {org.imageUrl ? (
@@ -75,28 +75,28 @@ function OrgCard({ org, muted = false }: { org: CkanOrgCard; muted?: boolean }) 
             className="h-10 w-10 shrink-0 rounded-lg object-contain"
           />
         ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
             <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-2">
+          <h2 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-2 dark:text-gray-100">
             {org.title}
           </h2>
           {org.description && (
-            <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2">
+            <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2 dark:text-gray-400">
               {org.description}
             </p>
           )}
         </div>
       </div>
       <div className="flex-1" />
-      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-        <span className="text-xs font-semibold text-[#0c2445]">
+      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
+        <span className="text-xs font-semibold text-[#0c2445] dark:text-blue-300">
           {org.packageCount}
-          <span className="ml-1 font-normal text-gray-400">dataset</span>
+          <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">dataset</span>
         </span>
         {!muted && (
           <span className="text-[11px] font-medium text-blue-600">Lihat dataset &rarr;</span>

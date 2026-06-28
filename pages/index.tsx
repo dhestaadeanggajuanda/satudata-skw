@@ -118,7 +118,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
           {/* Search */}
           <form
             onSubmit={(e) => { e.preventDefault(); search(query) }}
-            className="mt-8 flex overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-white/20"
+            className="mt-8 flex overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-white/20 dark:bg-gray-900 dark:ring-white/10"
             role="search"
           >
             <input
@@ -127,7 +127,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Cari dari ${totalCount} dataset...`}
               aria-label="Cari dataset"
-              className="flex-1 bg-transparent px-5 py-4 text-base text-gray-900 placeholder-gray-400 focus:outline-none"
+              className="flex-1 bg-transparent px-5 py-4 text-base text-gray-900 placeholder-gray-400 focus:outline-none dark:text-gray-100 dark:placeholder-gray-500"
             />
             <button
               type="submit"
@@ -166,19 +166,19 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
       </section>
 
       {/* ── Stats strip ── */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl divide-x divide-gray-100 px-4">
+      <div className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <div className="mx-auto flex max-w-6xl divide-x divide-gray-100 px-4 dark:divide-gray-800">
           <div className="py-4 pr-8">
-            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">{totalCount}</p>
-            <p className="text-xs text-gray-500">Dataset tersedia</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl dark:text-blue-300">{totalCount}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Dataset tersedia</p>
           </div>
           <div className="py-4 px-8">
-            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">25+</p>
-            <p className="text-xs text-gray-500">Organisasi</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl dark:text-blue-300">25+</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Organisasi</p>
           </div>
           <div className="py-4 px-8">
-            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl">Terbuka</p>
-            <p className="text-xs text-gray-500">Akses publik</p>
+            <p className="text-xl font-bold text-[#0c2445] sm:text-2xl dark:text-blue-300">Terbuka</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Akses publik</p>
           </div>
         </div>
       </div>
@@ -188,12 +188,12 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Infografis</h2>
-              <p className="mt-0.5 text-sm text-gray-500">Konten visual resmi Pemerintah Kota Singkawang</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Infografis</h2>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Konten visual resmi Pemerintah Kota Singkawang</p>
             </div>
             <Link
               href="/infografis"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800"
             >
               Lihat semua &rarr;
             </Link>
@@ -208,7 +208,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
                   key={post.name}
                   type="button"
                   onClick={() => imgSrc ? setModalImg({ src: imgSrc, title: post.title, blogUrl }) : window.open(blogUrl, '_blank')}
-                  className="group block w-full cursor-pointer overflow-hidden rounded-xl border border-gray-200 shadow-sm transition-all hover:border-[#0c2445]/30 hover:shadow-md"
+                  className="group block w-full cursor-pointer overflow-hidden rounded-xl border border-gray-200 shadow-sm transition-all hover:border-[#0c2445]/30 hover:shadow-md dark:border-gray-700"
                 >
                   <div className="relative h-[350px] overflow-hidden">
                     {imgSrc ? (
@@ -254,12 +254,12 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Topik</h2>
-              <p className="mt-0.5 text-sm text-gray-500">Jelajahi dataset berdasarkan bidang</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Topik</h2>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Jelajahi dataset berdasarkan bidang</p>
             </div>
             <Link
               href="/topik"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800"
             >
               Lihat semua &rarr;
             </Link>
@@ -270,7 +270,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
               <Link
                 key={grp.name}
                 href={`/search?group=${encodeURIComponent(grp.name)}`}
-                className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md"
+                className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:border-emerald-700"
               >
                 <div className="mb-3 flex items-center gap-3">
                   {grp.imageUrl ? (
@@ -284,11 +284,11 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
                       {TOPIC_ICONS[grp.name] ?? '📂'}
                     </div>
                   )}
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                     {grp.packageCount} dataset
                   </span>
                 </div>
-                <h3 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-emerald-700">
+                <h3 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-emerald-700 dark:text-gray-100 dark:group-hover:text-emerald-400">
                   {grp.title}
                 </h3>
                 <div className="flex-1" />
@@ -308,12 +308,12 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
         <section className="mx-auto max-w-6xl px-4 pb-12">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Organisasi</h2>
-              <p className="mt-0.5 text-sm text-gray-500">Instansi pemerintah yang menerbitkan data</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Organisasi</h2>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Instansi pemerintah yang menerbitkan data</p>
             </div>
             <Link
               href="/organisasi"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800"
             >
               Lihat semua &rarr;
             </Link>
@@ -324,7 +324,7 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
               <Link
                 key={org.name}
                 href={`/search?org=${encodeURIComponent(org.name)}`}
-                className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-700"
               >
                 {org.imageUrl ? (
                   <img
@@ -340,10 +340,10 @@ export default function Home({ totalCount, tags, groups, orgs, infografis }: Pro
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-700">
+                  <p className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-400">
                     {org.title}
                   </p>
-                  <p className="text-xs text-gray-400">{org.packageCount} dataset</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{org.packageCount} dataset</p>
                 </div>
                 <span className="shrink-0 text-[11px] font-medium text-blue-600 group-hover:text-blue-700">→</span>
               </Link>

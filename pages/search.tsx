@@ -118,15 +118,15 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
       </Head>
 
       {/* Page header band */}
-      <div className="border-b border-gray-200 bg-white py-5 shadow-sm">
+      <div className="border-b border-gray-200 bg-white py-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl px-4">
-          <nav className="mb-1 text-xs text-gray-400">
-            <Link href="/" className="hover:text-gray-600">Beranda</Link>
+          <nav className="mb-1 text-xs text-gray-400 dark:text-gray-500">
+            <Link href="/" className="hover:text-gray-600 dark:hover:text-gray-300">Beranda</Link>
             <span className="mx-1.5">/</span>
             <span>Dataset</span>
           </nav>
-          <h1 className="text-xl font-bold text-gray-900">Dataset</h1>
-          <p className="mt-0.5 text-sm text-gray-500">{count} dataset tersedia dari berbagai instansi</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Dataset</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{count} dataset tersedia dari berbagai instansi</p>
         </div>
       </div>
 
@@ -135,7 +135,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
         <div className="mb-4 md:hidden">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 8h12M9 12h6" />
@@ -152,9 +152,9 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
         <div className="flex gap-6">
           {/* ── Sidebar ── */}
           <aside className={`w-56 shrink-0 ${sidebarOpen ? 'block' : 'hidden'} md:block`}>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">Filter</h2>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Filter</h2>
                 {hasFilters && (
                   <button onClick={clearAll} className="text-xs text-blue-600 hover:underline">
                     Hapus semua
@@ -188,7 +188,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
 
               {/* Org list */}
               <div className="mb-4">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   Organisasi
                 </p>
                 <ul className="max-h-48 space-y-px overflow-y-auto">
@@ -199,11 +199,11 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                         <button
                           onClick={() => navigate({ org: isActive ? undefined : org.name })}
                           className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
-                            isActive ? 'bg-[#0c2445] font-semibold text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            isActive ? 'bg-[#0c2445] font-semibold text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                           }`}
                         >
                           <span className="line-clamp-1 capitalize">{org.title}</span>
-                          <span className={`ml-2 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                          <span className={`ml-2 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
                             {org.count}
                           </span>
                         </button>
@@ -216,7 +216,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
               {/* Group list */}
               {groupList.length > 0 && (
                 <div>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                     Topik
                   </p>
                   <ul className="max-h-48 space-y-px overflow-y-auto">
@@ -227,11 +227,11 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                           <button
                             onClick={() => navigate({ group: isActive ? undefined : grp.name })}
                             className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
-                              isActive ? 'bg-emerald-700 font-semibold text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                              isActive ? 'bg-emerald-700 font-semibold text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                             }`}
                           >
                             <span className="line-clamp-1 capitalize">{grp.title}</span>
-                            <span className={`ml-2 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            <span className={`ml-2 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
                               {grp.count}
                             </span>
                           </button>
@@ -254,7 +254,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Cari dataset..."
                 aria-label="Cari dataset"
-                className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-[#0c2445] focus:outline-none focus:ring-2 focus:ring-[#0c2445]/30"
+                className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-[#0c2445] focus:outline-none focus:ring-2 focus:ring-[#0c2445]/30 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
               />
               <button
                 type="submit"
@@ -265,7 +265,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
             </form>
 
             {/* Results info */}
-            <p className="mb-4 text-xs text-gray-400">
+            <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
               {filtered.length === 0
                 ? 'Tidak ada dataset yang cocok.'
                 : `Menampilkan ${startItem}–${endItem} dari ${filtered.length} dataset`}
@@ -273,8 +273,8 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
 
             {/* Cards */}
             {paged.length === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-gray-200 bg-white p-12 text-center">
-                <p className="text-sm font-medium text-gray-500">Tidak ada dataset yang cocok</p>
+              <div className="rounded-xl border-2 border-dashed border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Tidak ada dataset yang cocok</p>
                 {hasFilters && (
                   <button onClick={clearAll} className="mt-2 text-xs text-blue-600 hover:underline">
                     Hapus semua filter
@@ -287,22 +287,22 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                   <Link
                     key={`${ds.namespace}/${ds.slug}`}
                     href={datasetHref(ds)}
-                    className="group flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                    className="group flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-700"
                   >
-                    <span className="inline-block self-start rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium capitalize text-blue-700">
+                    <span className="inline-block self-start rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium capitalize text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                       {ds.namespace.replace(/-/g, ' ')}
                     </span>
-                    <h2 className="mt-2.5 text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-blue-700">
+                    <h2 className="mt-2.5 text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-400">
                       {ds.name}
                     </h2>
                     {ds.description && (
-                      <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2">
+                      <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-2 dark:text-gray-400">
                         {ds.description}
                       </p>
                     )}
                     <div className="flex-1" />
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5">
-                      <span className="text-[11px] text-gray-400">Dataset</span>
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5 dark:border-gray-800">
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500">Dataset</span>
                       <span className="text-[11px] font-medium text-blue-600">Lihat &rarr;</span>
                     </div>
                   </Link>
@@ -313,20 +313,20 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-                <p className="order-2 text-xs text-gray-400 sm:order-1">
+                <p className="order-2 text-xs text-gray-400 sm:order-1 dark:text-gray-500">
                   Halaman {safePage} dari {totalPages}
                 </p>
                 <nav className="order-1 flex items-center gap-1 sm:order-2" aria-label="Pagination">
                   <button
                     onClick={() => navigate({ page: String(safePage - 1) })}
                     disabled={safePage === 1}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
                   >
                     ← Prev
                   </button>
                   {buildPageNumbers(safePage, totalPages).map((p, i) =>
                     p === '…' ? (
-                      <span key={`ellipsis-${i}`} className="px-2 text-gray-400">…</span>
+                      <span key={`ellipsis-${i}`} className="px-2 text-gray-400 dark:text-gray-500">…</span>
                     ) : (
                       <button
                         key={p}
@@ -334,7 +334,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                         className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
                           p === safePage
                             ? 'border-[#0c2445] bg-[#0c2445] font-semibold text-white'
-                            : 'border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50'
+                            : 'border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
                         }`}
                       >
                         {p}
@@ -344,7 +344,7 @@ export default function Search({ datasets, count }: { datasets: DatasetCard[]; c
                   <button
                     onClick={() => navigate({ page: String(safePage + 1) })}
                     disabled={safePage === totalPages}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
                   >
                     Next →
                   </button>

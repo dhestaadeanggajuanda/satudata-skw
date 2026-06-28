@@ -115,7 +115,7 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
 
   if (error) {
     return (
-      <div className="p-4 text-sm text-red-700 bg-red-50 rounded-md">
+      <div className="p-4 text-sm text-red-700 bg-red-50 rounded-md dark:text-red-300 dark:bg-red-900/30">
         Failed to load data: {error}
       </div>
     )
@@ -126,18 +126,18 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
       <DebouncedInput
         value={globalFilter}
         onChange={(v) => setGlobalFilter(String(v))}
-        className="mb-4 w-full max-w-sm px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="mb-4 w-full max-w-sm px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
         placeholder="Search all columns..."
       />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left border-b border-gray-300">
+          <thead className="text-left border-b border-gray-300 dark:border-gray-700">
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((h) => (
                   <th
                     key={h.id}
-                    className="pr-4 pb-2 font-semibold text-gray-700 cursor-pointer select-none whitespace-nowrap"
+                    className="pr-4 pb-2 font-semibold text-gray-700 cursor-pointer select-none whitespace-nowrap dark:text-gray-200"
                     onClick={h.column.getToggleSortingHandler()}
                   >
                     {flexRender(h.column.columnDef.header, h.getContext())}
@@ -150,9 +150,9 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
           </thead>
           <tbody>
             {table.getRowModel().rows.map((r) => (
-              <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50">
                 {r.getVisibleCells().map((c) => (
-                  <td key={c.id} className="pr-4 py-2 text-gray-800">
+                  <td key={c.id} className="pr-4 py-2 text-gray-800 dark:text-gray-200">
                     {flexRender(c.column.columnDef.cell, c.getContext())}
                   </td>
                 ))}
@@ -172,7 +172,7 @@ export function Table({ data: initialData = [], cols: initialCols = [], csv = ''
             <Icon />
           </button>
         ))}
-        <span className="text-sm text-gray-600 ml-2">
+        <span className="text-sm text-gray-600 ml-2 dark:text-gray-300">
           Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </span>
       </div>

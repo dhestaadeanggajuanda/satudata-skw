@@ -212,14 +212,14 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
       </Head>
 
       {/* Page header band */}
-      <div className="border-b border-gray-200 bg-white py-4 shadow-sm">
+      <div className="border-b border-gray-200 bg-white py-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl px-4">
-          <nav className="text-xs text-gray-400">
-            <Link href="/" className="hover:text-gray-600">Beranda</Link>
+          <nav className="text-xs text-gray-400 dark:text-gray-500">
+            <Link href="/" className="hover:text-gray-600 dark:hover:text-gray-300">Beranda</Link>
             <span className="mx-1.5">/</span>
-            <Link href="/search" className="hover:text-gray-600">Dataset</Link>
+            <Link href="/search" className="hover:text-gray-600 dark:hover:text-gray-300">Dataset</Link>
             <span className="mx-1.5">/</span>
-            <span className="line-clamp-1 text-gray-600">{dataset.title}</span>
+            <span className="line-clamp-1 text-gray-600 dark:text-gray-300">{dataset.title}</span>
           </nav>
         </div>
       </div>
@@ -246,10 +246,10 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
             )}
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{dataset.title}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-100">{dataset.title}</h1>
 
           {dataset.notes && (
-            <p className="mt-3 text-gray-600 leading-relaxed whitespace-pre-line">{dataset.notes}</p>
+            <p className="mt-3 text-gray-600 leading-relaxed whitespace-pre-line dark:text-gray-300">{dataset.notes}</p>
           )}
 
           {dataset.tags.length > 0 && (
@@ -258,7 +258,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                 <Link
                   key={tag}
                   href={`/search?q=${encodeURIComponent(tag)}`}
-                  className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 transition-colors"
+                  className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   {tag}
                 </Link>
@@ -269,7 +269,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 
         {/* Org card */}
         {dataset.orgInfo && (
-          <div className="mt-5 flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="mt-5 flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
             {dataset.orgInfo.imageUrl ? (
               <img
                 src={dataset.orgInfo.imageUrl}
@@ -277,33 +277,33 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                 className="h-12 w-12 shrink-0 rounded-lg object-contain"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">Diterbitkan oleh</p>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Diterbitkan oleh</p>
               <Link
                 href={`/search?org=${encodeURIComponent(dataset.orgSlug)}`}
-                className="text-sm font-semibold text-gray-900 hover:text-blue-700 transition-colors"
+                className="text-sm font-semibold text-gray-900 hover:text-blue-700 transition-colors dark:text-gray-100 dark:hover:text-blue-400"
               >
                 {dataset.orgInfo.title}
               </Link>
               {dataset.orgInfo.description && (
-                <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{dataset.orgInfo.description}</p>
+                <p className="mt-0.5 text-xs text-gray-500 line-clamp-1 dark:text-gray-400">{dataset.orgInfo.description}</p>
               )}
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-lg font-bold text-[#0c2445]">{dataset.orgInfo.packageCount}</p>
-              <p className="text-[11px] text-gray-400">dataset</p>
+              <p className="text-lg font-bold text-[#0c2445] dark:text-blue-300">{dataset.orgInfo.packageCount}</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">dataset</p>
             </div>
           </div>
         )}
 
         {/* Tab nav */}
-        <div className="mt-8 border-b border-gray-200">
+        <div className="mt-8 border-b border-gray-200 dark:border-gray-800">
           <nav className="-mb-px flex gap-4 overflow-x-auto sm:gap-8">
             {tabs.map((tab) => (
               <button
@@ -311,8 +311,8 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`pb-3 text-sm transition-colors ${
                   activeTab === tab.id
-                    ? 'border-b-2 border-[#0c2445] font-semibold text-[#0c2445]'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'border-b-2 border-[#0c2445] font-semibold text-[#0c2445] dark:border-blue-400 dark:text-blue-300'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 {tab.label}
@@ -328,8 +328,8 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Informasi Dataset */}
               <aside className="lg:col-span-1">
-                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <h2 className="mb-4 text-sm font-semibold text-gray-700">
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                  <h2 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">
                     Informasi Dataset
                   </h2>
                   <dl className="space-y-3">
@@ -338,8 +338,8 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                     {dataset.org && <MetaRow label="Organisasi" value={dataset.org} />}
                     {dataset.license && (
                       <div>
-                        <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Lisensi</dt>
-                        <dd className="mt-0.5 text-sm text-gray-800">
+                        <dt className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Lisensi</dt>
+                        <dd className="mt-0.5 text-sm text-gray-800 dark:text-gray-200">
                           {dataset.licenseUrl ? (
                             <a href={dataset.licenseUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700">
                               {dataset.license}
@@ -355,11 +355,11 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 
               {/* Unduh Data */}
               <section className="lg:col-span-2">
-                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+                <h2 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Unduh Data
                 </h2>
                 {dataset.resources.length === 0 ? (
-                  <div className="rounded-xl border-2 border-dashed border-gray-200 p-8 text-center text-gray-400">
+                  <div className="rounded-xl border-2 border-dashed border-gray-200 p-8 text-center text-gray-400 dark:border-gray-700 dark:text-gray-500">
                     <p>Dataset ini belum memiliki berkas.</p>
                   </div>
                 ) : (
@@ -367,7 +367,7 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                     {dataset.resources.map((r) => (
                       <div
                         key={r.id}
-                        className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-blue-200 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-blue-200 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-700"
                       >
                         <div className="flex items-start gap-3 min-w-0">
                           {r.format && (
@@ -376,9 +376,9 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
                             </span>
                           )}
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 line-clamp-1">{r.name}</p>
+                            <p className="text-sm font-medium text-gray-900 line-clamp-1 dark:text-gray-100">{r.name}</p>
                             {r.description && (
-                              <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{r.description}</p>
+                              <p className="mt-0.5 text-xs text-gray-500 line-clamp-2 dark:text-gray-400">{r.description}</p>
                             )}
                           </div>
                         </div>
@@ -401,9 +401,9 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
             {/* ── Visualisasi (dataset-specific, gated by slug) ── */}
             {dataset.slug === 'indeks-toleransi-indeks-kota-toleran' &&
               dataset.resources.some((r) => r.format.toLowerCase() === 'csv') && (
-              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-1 text-sm font-semibold text-gray-700">Visualisasi</h2>
-                <p className="mb-4 text-xs text-gray-400">
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <h2 className="mb-1 text-sm font-semibold text-gray-700 dark:text-gray-200">Visualisasi</h2>
+                <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
                   Tren Indeks Toleransi Kota Singkawang tahun 2018–2023
                 </p>
                 <Chart
@@ -424,11 +424,11 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 
             {/* Pratinjau Data */}
             {firstTabular && (
-              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-sm font-semibold text-gray-700">
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <h2 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Pratinjau Data
                 </h2>
-                <p className="mb-3 text-xs text-gray-400">
+                <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
                   {firstTabular.name}
                   {firstTabular.format && (
                     <span className={`ml-2 rounded px-1.5 py-0.5 text-xs font-bold uppercase ${formatBadgeClass(firstTabular.format)}`}>
@@ -442,15 +442,15 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 
             {/* Informasi Tambahan */}
             {dataset.extras.length > 0 && (
-              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+              <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <h2 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Informasi Tambahan
                 </h2>
                 <dl className="grid gap-4 sm:grid-cols-2">
                   {dataset.extras.map((e) => (
                     <div key={e.key}>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{e.key}</dt>
-                      <dd className="mt-1 text-sm text-gray-700 leading-relaxed">{e.value}</dd>
+                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">{e.key}</dt>
+                      <dd className="mt-1 text-sm text-gray-700 leading-relaxed dark:text-gray-300">{e.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -462,9 +462,9 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
         {/* ── Tab: Grup ── */}
         {activeTab === 'grup' && (
           <div className="mt-6">
-            <h2 className="mb-4 text-sm font-semibold text-gray-700">Grup</h2>
+            <h2 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">Grup</h2>
             {dataset.groups.length === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400">
+              <div className="rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400 dark:border-gray-700 dark:text-gray-500">
                 <p className="text-base font-medium">Dataset ini tidak memiliki grup</p>
                 <p className="mt-1 text-sm">
                   Dataset tidak tergabung dalam grup atau kategori manapun.
@@ -473,13 +473,13 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {dataset.groups.map((g) => (
-                  <div key={g.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
+                  <div key={g.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
                     {g.imageUrl && (
                       <img src={g.imageUrl} alt={g.title} className="h-10 w-10 rounded object-cover" />
                     )}
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{g.title}</p>
-                      <p className="text-xs text-gray-400">{g.packageCount} dataset</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{g.title}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{g.packageCount} dataset</p>
                     </div>
                   </div>
                 ))}
@@ -491,20 +491,20 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
         {/* ── Tab: Aktivitas ── */}
         {activeTab === 'aktivitas' && (
           <div className="mt-6">
-            <h2 className="mb-6 text-sm font-semibold text-gray-700">
+            <h2 className="mb-6 text-sm font-semibold text-gray-700 dark:text-gray-200">
               Riwayat Aktivitas
             </h2>
             {dataset.activities.length === 0 ? (
-              <p className="text-sm text-gray-400">Tidak ada riwayat aktivitas tersedia.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Tidak ada riwayat aktivitas tersedia.</p>
             ) : (
-              <ol className="relative ml-3 space-y-6 border-l-2 border-gray-200">
+              <ol className="relative ml-3 space-y-6 border-l-2 border-gray-200 dark:border-gray-700">
                 {dataset.activities.map((a, i) => (
                   <li key={i} className="relative ml-6">
-                    <span className="absolute -left-[1.65rem] top-1 h-3 w-3 rounded-full border-2 border-white bg-[#0c2445] shadow-sm" />
-                    <time className="mb-0.5 block text-xs text-gray-400">
+                    <span className="absolute -left-[1.65rem] top-1 h-3 w-3 rounded-full border-2 border-white bg-[#0c2445] shadow-sm dark:border-gray-900 dark:bg-blue-400" />
+                    <time className="mb-0.5 block text-xs text-gray-400 dark:text-gray-500">
                       {formatDate(a.timestamp)}
                     </time>
-                    <p className="text-sm font-medium text-gray-800">{a.label}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{a.label}</p>
                   </li>
                 ))}
               </ol>
@@ -519,8 +519,8 @@ export default function DatasetPage({ dataset }: { dataset: DatasetView }) {
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-800">{value}</dd>
+      <dt className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</dt>
+      <dd className="mt-0.5 text-sm text-gray-800 dark:text-gray-200">{value}</dd>
     </div>
   )
 }
