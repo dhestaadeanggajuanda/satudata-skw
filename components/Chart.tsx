@@ -148,34 +148,38 @@ export function Chart({
     )
   }
 
-  const grid = <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-  const axes = (
-    <>
-      <XAxis dataKey={xKey} tick={{ fontSize: 12 }} stroke="#9ca3af" />
-      <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={['auto', 'auto']} />
-    </>
-  )
-
   return (
     <div style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
         {type === 'bar' ? (
           <BarChart data={chartData}>
-            {grid}{axes}<Tooltip /><Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey={xKey} tick={{ fontSize: 12 }} stroke="#9ca3af" />
+            <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={['auto', 'auto']} />
+            <Tooltip />
+            <Legend />
             {seriesKeys.map((k, i) => (
               <Bar key={k} dataKey={k} fill={PALETTE[i % PALETTE.length]} radius={[3, 3, 0, 0]} />
             ))}
           </BarChart>
         ) : type === 'area' ? (
           <AreaChart data={chartData}>
-            {grid}{axes}<Tooltip /><Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey={xKey} tick={{ fontSize: 12 }} stroke="#9ca3af" />
+            <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={['auto', 'auto']} />
+            <Tooltip />
+            <Legend />
             {seriesKeys.map((k, i) => (
               <Area key={k} type="monotone" dataKey={k} stroke={PALETTE[i % PALETTE.length]} fill={PALETTE[i % PALETTE.length]} fillOpacity={0.15} dot={{ r: 4 }} />
             ))}
           </AreaChart>
         ) : (
           <LineChart data={chartData}>
-            {grid}{axes}<Tooltip /><Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey={xKey} tick={{ fontSize: 12 }} stroke="#9ca3af" />
+            <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={['auto', 'auto']} />
+            <Tooltip />
+            <Legend />
             {seriesKeys.map((k, i) => (
               <Line key={k} type="monotone" dataKey={k} stroke={PALETTE[i % PALETTE.length]} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
             ))}
