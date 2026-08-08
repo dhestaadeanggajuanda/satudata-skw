@@ -11,14 +11,16 @@ import {
   GlobeAltIcon,
   EnvelopeIcon,
   ChartBarIcon,
+  ShieldCheckIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV_LINKS = [
-  { href: '/search',      label: 'Dataset',    icon: CircleStackIcon },
-  { href: '/topik',       label: 'Topik',      icon: TagIcon },
-  { href: '/organisasi',  label: 'Organisasi', icon: BuildingOfficeIcon },
-  { href: '/infografis',  label: 'Infografis', icon: PhotoIcon },
+  { href: '/search',            label: 'Dataset',    icon: CircleStackIcon },
+  { href: '/topik',             label: 'Topik',      icon: TagIcon },
+  { href: '/organisasi',        label: 'Organisasi', icon: BuildingOfficeIcon },
+  { href: '/infografis',        label: 'Infografis', icon: PhotoIcon },
+  { href: '/kebijakan-privasi', label: 'Privasi',    icon: ShieldCheckIcon },
 ]
 
 const APP_LINKS = [
