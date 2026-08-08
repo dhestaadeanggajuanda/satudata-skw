@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Footer() {
   const year = new Date().getFullYear()
   return (
@@ -41,6 +43,11 @@ export default function Footer() {
             >
               satudata.singkawangkota.go.id
             </a>
+          </p>
+          <p>
+            <Link href="/kebijakan-privasi" className="hover:text-white transition-colors">
+              Kebijakan Privasi
+            </Link>
           </p>
         </div>
 
