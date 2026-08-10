@@ -18,10 +18,11 @@ export default function Document() {
   return (
     <Html lang="id">
       <Head>
-        {/* Default PortalJS branding — PLACEHOLDER. Replace the files in `public/`
-            (favicon.ico, icon.svg, apple-touch-icon.png, icon-512.png) with your
-            own brand marks; these links can stay as-is once the files are swapped. */}
-        <link rel="icon" type="image/png" href="/favicon.png" />
+        {/* Ikon situs: lambang Kota Singkawang, dibuat dari public/logo-singkawang.png.
+            favicon.ico berisi 16/32/48 px; apple-touch-icon berlatar putih karena iOS
+            tidak mendukung transparansi. (public/icon.svg masih placeholder PortalJS
+            dan belum dipakai di mana pun.) */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="description" content="Portal Satu Data Kota Singkawang." />
