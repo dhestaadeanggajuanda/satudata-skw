@@ -1,15 +1,18 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import type { GetStaticProps } from 'next'
-import { REVALIDATE } from '../lib/ckan'
-import { MEDIACENTER, NEWS_QUERY, newsList, type NewsPost } from '../lib/wordpress'
+import NewsCard, { NewsCardSkeleton } from '../components/NewsCard'
+import { useNews } from '../lib/useNews'
+import { MEDIACENTER, NEWS_QUERY } from '../lib/wordpress'
 
-export const getStaticProps: GetStaticProps<{ posts: NewsPost[] }> = async () => {
-  const posts = await newsList(30)
-  return { props: { posts }, revalidate: REVALIDATE }
-}
+const LIMIT = 30
 
-export default function BeritaPage({ posts }: { posts: NewsPost[] }) {
+// Halaman statis: berita diambil di browser (lihat lib/wordpress.ts), jadi tidak
+// ada getStaticProps sama sekali.
+export default function BeritaPage() {
+  const { posts, loading, error } = useNews(LIMIT)
+
+  const sourceUrl = `${MEDIACENTER}/?s=${encodeURIComponent(NEWS_QUERY)}`
+
   return (
     <>
       <Head>
@@ -32,7 +35,35 @@ export default function BeritaPage({ posts }: { posts: NewsPost[] }) {
       </div>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
-        {posts.length === 0 ? (
+        {loading && (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }, (_, i) => <NewsCardSkeleton key={i} />)}
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <svg className="mb-4 h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Berita gagal dimuat
+            </p>
+            <p className="mt-1 max-w-sm text-xs text-gray-400 dark:text-gray-500">
+              Media Center sedang tidak dapat dihubungi dari peramban Anda.
+            </p>
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+            >
+              Buka Media Center &rarr;
+            </a>
+          </div>
+        )}
+
+        {!loading && !error && posts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <svg className="mb-4 h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m0 0h2a2 2 0 012 2v9a2 2 0 01-2 2h-2m0-13v13M9 8h4m-4 4h4m-4 4h2" />
@@ -42,64 +73,20 @@ export default function BeritaPage({ posts }: { posts: NewsPost[] }) {
               Berita akan muncul di sini setelah dipublikasikan di Media Center
             </p>
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && posts.length > 0 && (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {posts.map((post) => (
-                <a
-                  key={post.id}
-                  href={post.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:border-[#0c2445]/30 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-700"
-                >
-                  <div className="aspect-video w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-                    {post.image ? (
-                      <img
-                        src={post.image}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0c2445]/10 to-[#0c2445]/5">
-                        <svg className="h-10 w-10 text-[#0c2445]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m0 0h2a2 2 0 012 2v9a2 2 0 01-2 2h-2m0-13v13M9 8h4m-4 4h4m-4 4h2" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <h2 className="text-sm font-semibold leading-snug text-gray-900 line-clamp-3 group-hover:text-[#0c2445] dark:text-gray-100 dark:group-hover:text-blue-300">
-                      {post.title}
-                    </h2>
-                    {post.excerpt && (
-                      <p className="mt-2 text-xs leading-relaxed text-gray-500 line-clamp-3 dark:text-gray-400">
-                        {post.excerpt}
-                      </p>
-                    )}
-                    <div className="flex-1" />
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5 dark:border-gray-800">
-                      {post.date && (
-                        <time dateTime={post.date} className="text-[11px] text-gray-400 dark:text-gray-500">
-                          {new Date(post.date).toLocaleDateString('id-ID', {
-                            day: 'numeric', month: 'long', year: 'numeric',
-                          })}
-                        </time>
-                      )}
-                      <span className="text-[11px] font-medium text-[#0c2445]/70 group-hover:text-[#0c2445] dark:text-blue-300/70 dark:group-hover:text-blue-300">
-                        Baca &rarr;
-                      </span>
-                    </div>
-                  </div>
-                </a>
+                <NewsCard key={post.id} post={post} heading="h2" />
               ))}
             </div>
 
             <p className="mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
               Sumber:{' '}
               <a
-                href={`${MEDIACENTER}/?s=${encodeURIComponent(NEWS_QUERY)}`}
+                href={sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300"

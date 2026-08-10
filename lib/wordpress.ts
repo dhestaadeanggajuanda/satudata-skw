@@ -1,18 +1,23 @@
-// Minimal server-side WordPress client for Media Center Kota Singkawang.
-// Mengikuti pola lib/ckan.ts: plain fetch, tanpa dependency, dan hanya dipakai
-// di getStaticProps sehingga tidak pernah ikut ke bundle browser.
+// Klien WordPress untuk Media Center Kota Singkawang.
+//
+// PENTING: dipanggil DARI BROWSER, bukan dari getStaticProps. Server produksi
+// berada di belakang NAT yang tidak mendukung hairpin, sehingga tidak bisa
+// menghubungi 103.140.206.4 — IP publiknya sendiri, yang juga dipakai
+// mediacenter (koneksi selalu ETIMEDOUT). CKAN tetap bisa karena dialamatkan
+// lewat IP internal (DMS=172.16.20.229:5000). Browser pengunjung tidak kena
+// batasan itu, dan /wp-json mengirim header CORS yang mengizinkan origin portal.
 
-// Base URL Media Center (WordPress). Override lewat env MEDIACENTER_URL.
+// Base URL Media Center. Prefiks NEXT_PUBLIC_ wajib supaya nilainya ikut
+// ter-inline ke bundle browser saat build.
 export const MEDIACENTER = (
-  process.env.MEDIACENTER_URL || 'https://mediacenter.singkawangkota.go.id'
+  process.env.NEXT_PUBLIC_MEDIACENTER_URL || 'https://mediacenter.singkawangkota.go.id'
 ).replace(/\/+$/, '')
 
-// Kata kunci pencarian berita yang ditarik ke portal. WordPress mencari di
-// judul, isi, dan kutipan. Override lewat env MEDIACENTER_QUERY.
-export const NEWS_QUERY = process.env.MEDIACENTER_QUERY || 'statistik'
+// Kata kunci pencarian berita. WordPress mencari di judul, isi, dan kutipan.
+export const NEWS_QUERY = process.env.NEXT_PUBLIC_MEDIACENTER_QUERY || 'statistik'
 
-// Batas waktu fetch (ms) — build tidak boleh menggantung kalau Media Center lambat.
-const TIMEOUT_MS = Number(process.env.MEDIACENTER_TIMEOUT_MS) || 15000
+// Batas waktu permintaan (ms) — dipakai oleh useNews.
+export const NEWS_TIMEOUT_MS = 15000
 
 export type NewsPost = {
   id: number
@@ -69,9 +74,8 @@ function pickImage(media: any): string | null {
 }
 
 // Ambil berita terbaru yang cocok dengan NEWS_QUERY, terbaru dulu.
-// Mengembalikan [] kalau Media Center tidak bisa dihubungi — section berita
-// hilang dari halaman, build tetap jalan.
-export async function newsList(limit = 12): Promise<NewsPost[]> {
+// Melempar error kalau gagal — pemanggil (useNews) yang menentukan tampilannya.
+export async function fetchNews(limit = 12, signal?: AbortSignal): Promise<NewsPost[]> {
   const qs = new URLSearchParams({
     search: NEWS_QUERY,
     per_page: String(Math.min(Math.max(limit, 1), 100)),
@@ -83,26 +87,22 @@ export async function newsList(limit = 12): Promise<NewsPost[]> {
     _fields: 'id,date,link,title,excerpt,_links.wp:featuredmedia',
   })
 
-  try {
-    const res = await fetch(`${MEDIACENTER}/wp-json/wp/v2/posts?${qs}`, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    })
-    if (!res.ok) throw new Error(`WP posts gagal: ${res.status} ${res.statusText}`)
+  // Hanya header CORS-safelisted supaya permintaan tetap "simple" (tanpa preflight).
+  const res = await fetch(`${MEDIACENTER}/wp-json/wp/v2/posts?${qs}`, {
+    headers: { Accept: 'application/json' },
+    signal,
+  })
+  if (!res.ok) throw new Error(`WP posts gagal: ${res.status} ${res.statusText}`)
 
-    const posts = await res.json()
-    if (!Array.isArray(posts)) throw new Error('WP posts: respons bukan array')
+  const posts = await res.json()
+  if (!Array.isArray(posts)) throw new Error('WP posts: respons bukan array')
 
-    return posts.map((p: any) => ({
-      id: p.id,
-      title: toText(p.title?.rendered ?? ''),
-      excerpt: toText(p.excerpt?.rendered ?? ''),
-      date: p.date ?? '',
-      link: p.link ?? '',
-      image: pickImage(p._embedded?.['wp:featuredmedia']?.[0]),
-    }))
-  } catch (err) {
-    console.warn('[mediacenter] gagal mengambil berita:', (err as Error).message)
-    return []
-  }
+  return posts.map((p: any) => ({
+    id: p.id,
+    title: toText(p.title?.rendered ?? ''),
+    excerpt: toText(p.excerpt?.rendered ?? ''),
+    date: p.date ?? '',
+    link: p.link ?? '',
+    image: pickImage(p._embedded?.['wp:featuredmedia']?.[0]),
+  }))
 }
