@@ -12,6 +12,7 @@ import {
   EnvelopeIcon,
   ChartBarIcon,
   ShieldCheckIcon,
+  NewspaperIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 
@@ -20,6 +21,7 @@ const NAV_LINKS = [
   { href: '/topik',             label: 'Topik',      icon: TagIcon },
   { href: '/organisasi',        label: 'Organisasi', icon: BuildingOfficeIcon },
   { href: '/infografis',        label: 'Infografis', icon: PhotoIcon },
+  { href: '/berita',            label: 'Berita',     icon: NewspaperIcon },
   { href: '/kebijakan-privasi', label: 'Privasi',    icon: ShieldCheckIcon },
 ]
 
