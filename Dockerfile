@@ -27,6 +27,10 @@ ENV DMS=${DMS}
 ARG CKAN_PUBLIC_URL
 ENV CKAN_PUBLIC_URL=${CKAN_PUBLIC_URL}
 
+# URL halaman Agent Satu Data (iframe widget kanan-bawah). Di-inline ke bundle browser.
+ARG NEXT_PUBLIC_AGENT_URL
+ENV NEXT_PUBLIC_AGENT_URL=${NEXT_PUBLIC_AGENT_URL}
+
 RUN npm run build
 
 # ────────────────────────────────────────────────────────────────

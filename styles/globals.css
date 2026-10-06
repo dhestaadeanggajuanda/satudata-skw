@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  /* Sisihkan ruang scrollbar di semua halaman. Tanpa ini halaman pendek (mis. Privasi)
+     tidak punya scrollbar sehingga kontennya bergeser ~8px dibanding halaman lain. */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     background-color: #f8fafc;
   }

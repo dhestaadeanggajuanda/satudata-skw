@@ -17,7 +17,7 @@ export const MEDIACENTER = (
 export const NEWS_QUERY = process.env.NEXT_PUBLIC_MEDIACENTER_QUERY || 'statistik'
 
 // Batas waktu permintaan (ms) — dipakai oleh useNews.
-export const NEWS_TIMEOUT_MS = 15000
+export const NEWS_TIMEOUT_MS = 30000
 
 export type NewsPost = {
   id: number

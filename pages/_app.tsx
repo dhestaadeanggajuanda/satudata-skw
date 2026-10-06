@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import AccessibilityWidget from '../components/AccessibilityWidget'
+import AgentWidget from '../components/AgentWidget'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -13,6 +14,7 @@ export default function App({ Component, pageProps }: AppProps) {
       </div>
       <Footer />
       <AccessibilityWidget />
+      <AgentWidget />
     </div>
   )
 }

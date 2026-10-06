@@ -1,15 +1,29 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import { useState } from 'react'
 import NewsCard, { NewsCardSkeleton } from '../components/NewsCard'
 import { useNews } from '../lib/useNews'
 import { MEDIACENTER, NEWS_QUERY } from '../lib/wordpress'
 
-const LIMIT = 30
+// Semua berita diambil sekali (maks. 100 per permintaan WordPress), lalu dibagi
+// per halaman di browser.
+const LIMIT = 100
+const PER_PAGE = 8
 
 // Halaman statis: berita diambil di browser (lihat lib/wordpress.ts), jadi tidak
 // ada getStaticProps sama sekali.
 export default function BeritaPage() {
   const { posts, loading, error } = useNews(LIMIT)
+  const [page, setPage] = useState(1)
+
+  const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE))
+  const current = Math.min(page, totalPages)
+  const pagePosts = posts.slice((current - 1) * PER_PAGE, current * PER_PAGE)
+
+  const goTo = (p: number) => {
+    setPage(p)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const sourceUrl = `${MEDIACENTER}/?s=${encodeURIComponent(NEWS_QUERY)}`
 
@@ -37,7 +51,7 @@ export default function BeritaPage() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         {loading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }, (_, i) => <NewsCardSkeleton key={i} />)}
+            {Array.from({ length: PER_PAGE }, (_, i) => <NewsCardSkeleton key={i} />)}
           </div>
         )}
 
@@ -78,10 +92,14 @@ export default function BeritaPage() {
         {!loading && !error && posts.length > 0 && (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {posts.map((post) => (
+              {pagePosts.map((post) => (
                 <NewsCard key={post.id} post={post} heading="h2" />
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <Pagination current={current} total={totalPages} onChange={goTo} />
+            )}
 
             <p className="mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
               Sumber:{' '}
@@ -98,5 +116,80 @@ export default function BeritaPage() {
         )}
       </main>
     </>
+  )
+}
+
+// Nomor halaman: selalu tampilkan pertama, terakhir, dan tetangga halaman aktif.
+function pageItems(current: number, total: number): (number | 'gap')[] {
+  const keep = new Set([1, total, current - 1, current, current + 1])
+  const out: (number | 'gap')[] = []
+  let prev = 0
+  for (let p = 1; p <= total; p++) {
+    if (!keep.has(p)) continue
+    if (p - prev > 1) out.push('gap')
+    out.push(p)
+    prev = p
+  }
+  return out
+}
+
+const PAGE_BTN =
+  'flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm font-medium transition-colors '
+
+const PAGE_IDLE =
+  'border-gray-200 bg-white text-gray-700 shadow-sm hover:border-gray-300 hover:bg-gray-50 ' +
+  'dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800'
+
+function Pagination({
+  current,
+  total,
+  onChange,
+}: {
+  current: number
+  total: number
+  onChange: (p: number) => void
+}) {
+  return (
+    <nav aria-label="Halaman berita" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => onChange(current - 1)}
+        disabled={current === 1}
+        className={`${PAGE_BTN}${PAGE_IDLE} disabled:cursor-not-allowed disabled:opacity-40`}
+      >
+        &larr; Sebelumnya
+      </button>
+      {pageItems(current, total).map((item, i) =>
+        item === 'gap' ? (
+          <span key={`gap-${i}`} className="px-1 text-gray-400 dark:text-gray-500" aria-hidden="true">
+            &hellip;
+          </span>
+        ) : (
+          <button
+            key={item}
+            type="button"
+            onClick={() => onChange(item)}
+            aria-label={`Halaman ${item}`}
+            aria-current={item === current ? 'page' : undefined}
+            className={
+              PAGE_BTN +
+              (item === current
+                ? 'border-[#0c2445] bg-[#0c2445] text-white dark:border-blue-500 dark:bg-blue-500'
+                : PAGE_IDLE)
+            }
+          >
+            {item}
+          </button>
+        ),
+      )}
+      <button
+        type="button"
+        onClick={() => onChange(current + 1)}
+        disabled={current === total}
+        className={`${PAGE_BTN}${PAGE_IDLE} disabled:cursor-not-allowed disabled:opacity-40`}
+      >
+        Selanjutnya &rarr;
+      </button>
+    </nav>
   )
 }

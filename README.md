@@ -118,3 +118,20 @@ public/{icon.svg,favicon.ico,apple-touch-icon.png,icon-512.png} — branding (pl
 components/Navbar.tsx       — site navbar: logo (hover-spin) + name + link to /search
 components/Table.tsx       — interactive table (search, sort, paginate)
 ```
+
+## Deploy di belakang nginx: CSP wajib mengizinkan Media Center & Agent
+
+nginx produksi mengirim `Content-Security-Policy` yang ketat. Berita Media Center
+diambil **dari browser** (lihat `lib/wordpress.ts`), jadi CSP harus mengizinkan host
+tersebut, kalau tidak browser memblokir `fetch` dan gambar — section Berita hilang
+dan halaman `/berita` menampilkan "Berita gagal dimuat". Tambahkan di CSP nginx:
+
+```
+connect-src 'self' https://data.singkawangkota.go.id https://mediacenter.singkawangkota.go.id;
+img-src     'self' data: https://data.singkawangkota.go.id https://mediacenter.singkawangkota.go.id;
+frame-src   https://<host-agent-satudata>;   # hanya jika NEXT_PUBLIC_AGENT_URL diisi
+```
+
+Variabel build `NEXT_PUBLIC_AGENT_URL` (https) menentukan halaman yang dimuat widget
+Agent Satu Data di kanan bawah; `NEXT_PUBLIC_MEDIACENTER_URL` dan
+`NEXT_PUBLIC_MEDIACENTER_QUERY` mengatur sumber berita.

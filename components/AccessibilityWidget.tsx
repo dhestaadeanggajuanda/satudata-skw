@@ -84,7 +84,7 @@ export default function AccessibilityWidget() {
         aria-label="Pengaturan aksesibilitas"
         aria-expanded={open}
         title="Aksesibilitas"
-        className="fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#0c2445] text-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-[#163666] focus:outline-none focus:ring-2 focus:ring-[#1a4f7a]"
+        className="fixed bottom-5 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#0c2445] text-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-[#163666] focus:outline-none focus:ring-2 focus:ring-[#1a4f7a]"
     >
         {/* Ikon aksesibilitas (universal) */}
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -98,7 +98,7 @@ export default function AccessibilityWidget() {
         <div
           role="dialog"
           aria-label="Pengaturan aksesibilitas"
-          className="fixed bottom-20 right-5 z-50 w-72 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+          className="fixed bottom-20 left-5 z-50 w-72 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-900"
         >
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Aksesibilitas</h2>
