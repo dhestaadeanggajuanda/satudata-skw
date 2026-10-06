@@ -135,3 +135,7 @@ frame-src   https://<host-agent-satudata>;   # hanya jika NEXT_PUBLIC_AGENT_URL 
 Variabel build `NEXT_PUBLIC_AGENT_URL` (https) menentukan halaman yang dimuat widget
 Agent Satu Data di kanan bawah; `NEXT_PUBLIC_MEDIACENTER_URL` dan
 `NEXT_PUBLIC_MEDIACENTER_QUERY` mengatur sumber berita.
+
+Konfigurasi siap pakai ada di `deploy/nginx/` (`satudata.conf` + `security-headers.conf`,
+sintaks sudah divalidasi dengan `nginx -t`). Variabel lingkungan: salin
+`.env.production.example` ke `.env` di server (lokal: `.env.example`).

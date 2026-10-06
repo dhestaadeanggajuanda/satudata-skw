@@ -12,6 +12,10 @@ services:
         CKAN_PUBLIC_URL: ${CKAN_PUBLIC_URL:-https://data.singkawangkota.go.id}
         # URL halaman Agent Satu Data (https). Kosong = widget tampil tanpa isi.
         NEXT_PUBLIC_AGENT_URL: ${NEXT_PUBLIC_AGENT_URL:-}
+        NEXT_PUBLIC_MEDIACENTER_URL: ${NEXT_PUBLIC_MEDIACENTER_URL:-}
+        NEXT_PUBLIC_MEDIACENTER_QUERY: ${NEXT_PUBLIC_MEDIACENTER_QUERY:-}
+        SITE_URL: ${SITE_URL:-}
+        REVALIDATE_SECONDS: ${REVALIDATE_SECONDS:-}
     image: satudata-skw:latest
     container_name: satudata-skw
     ports:
@@ -19,5 +23,6 @@ services:
     environment:
       DMS: ${DMS:-https://data.singkawangkota.go.id}
       CKAN_PUBLIC_URL: ${CKAN_PUBLIC_URL:-https://data.singkawangkota.go.id}
+      REVALIDATE_SECONDS: ${REVALIDATE_SECONDS:-}
       NODE_ENV: production
     restart: unless-stopped
